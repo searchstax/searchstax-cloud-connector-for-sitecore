@@ -1,0 +1,8 @@
+settings:
+  accountName: "KaranJeetSingh"
+  deploymentUid: "ss881269"
+  sitecorePrefix: "demo"
+  pathToWWWRoot: "C:\\inetpub\\wwwroot"
+  solrUsername: ""
+  solrPassword: ""
+  sitecoreVersion : "9.0.2" #Supported versions - 9.0.2 and 9.1.1
