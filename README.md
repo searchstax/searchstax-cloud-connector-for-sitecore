@@ -15,7 +15,7 @@ Currently the script only supports following sitecore versions:
 - Powershell Core v6 or above
 - Powershell-yaml  module
 
-### Installing requirements
+### Installing
 #### Powershell Core v6
 Powershell Core v6 can be installed by running following command via Powershell Windows.
 ```powershell
