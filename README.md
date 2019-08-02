@@ -51,3 +51,10 @@ It contains following fields:
 ```powershell
 .\sitecore-searchstax-connector.ps1
 ```
+4. Go to your sitecore page > Control Panel > Populate Solr Managed Schema > Select All > Populate
+5. On the same page, Indexing Manager > Select All > Rebuild
+
+
+## FAQ
+### IP Filtering
+If you have enabled IP filtering on your Solr instance, then make sure that you add the IP/CIDR block of your network or machine to the IP Filtering page. For more instructions on how to set up IP filtering, please follow our guide here - [How To Set-up IP Filtering](https://www.searchstax.com/docs/security/#IPfilter)
