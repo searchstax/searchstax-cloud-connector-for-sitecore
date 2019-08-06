@@ -47,12 +47,16 @@ It contains following fields:
 ### Instructions
 1. Configure the `config.yml` file.
 2. Start Powershell Core v6 as Administrator.
-3. Execute following command
+3. Change the execution policy to skip checking.
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+4. Execute following command
 ```powershell
 .\sitecore-searchstax-connector.ps1
 ```
-4. Go to your sitecore page > Control Panel > Populate Solr Managed Schema > Select All > Populate
-5. On the same page, Indexing Manager > Select All > Rebuild
+5. Go to your sitecore page > Control Panel > Populate Solr Managed Schema > Select All > Populate
+6. On the same page, Indexing Manager > Select All > Rebuild
 
 
 ## FAQ
