@@ -1,4 +1,4 @@
-# searchstax-sitecore-plugin
+# SearchStax Sitecore Plugin
 ## Introduction
 This script is used to connect a sitcore XP0 installation to a SearchStax' Solr instance. 
 It does following: 
@@ -58,6 +58,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 5. Go to your sitecore page > Control Panel > Populate Solr Managed Schema > Select All > Populate
 6. On the same page, Indexing Manager > Select All > Rebuild
 
+## How can I get help with SearchStax Sitecore Plugin?
+
+You can use GitHub to submit [bug reports](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=bug_report.md) or [feature requests](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=feature_request.md) for SearchStax-Sitecore-Plugin. Please do not submit usage questions via GitHub.
 
 ## FAQ
 ### IP Filtering
