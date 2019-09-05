@@ -66,7 +66,7 @@ function Check-DeploymentExist($token) {
     try {
         $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
         $headers.Add("Authorization", "Token $token")
-        $result = Invoke-WebRequest -Method Head -Headers $headers -uri $deploymentReadUrl
+        $result = Invoke-WebRequest -Method Get -Headers $headers -uri $deploymentReadUrl
         if ($result.statuscode -eq 200) {
             Write-Host "Deployment found. Continuing."
         } else {
