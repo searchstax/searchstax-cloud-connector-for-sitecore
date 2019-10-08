@@ -5,4 +5,4 @@ settings:
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
   solrPassword: ""
-  sitecoreVersion : "9.0.2" #Supported versions - 9.0.2 and 9.1.1
+  sitecoreVersion : "9.2.0" #Supported versions - 9.0.2, 9.1.1, and 9.2.0
