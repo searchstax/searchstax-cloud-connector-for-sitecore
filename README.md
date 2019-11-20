@@ -8,8 +8,9 @@ It does following:
 
 ## Supported Sitecore Versions
 Currently the script only supports following sitecore versions:
-- 9.0 Update-2 
-- 9.1 Update-1  
+- 9.0 Update-2 (9.0.2)
+- 9.1 Update-1 (9.1.1) 
+- 9.2 Initial Update (9.2.0)
 
 ## Requirements
 - Powershell Core v6 or above
