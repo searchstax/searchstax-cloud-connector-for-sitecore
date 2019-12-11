@@ -85,20 +85,20 @@ function Upload-Config($solrVersion, $token) {
 
         if ($solrVersion -eq "7.2.1") {
             $form = @{
-                name = "sitecore-xdb1_$sitecorePrefix"
+                name = "sitecore-xdb_$sitecorePrefix"
                 files = Get-Item -Path $solrConfigPath721
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
         } Elseif ($solrVersion -eq "7.5.0") {
             $form = @{
-                name = "sitecore-xdb1_$sitecorePrefix"
+                name = "sitecore-xdb_$sitecorePrefix"
                 files = Get-Item -Path $solrConfigPath750
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
         }
          Elseif ($solrVersion -eq "6") {
             foreach($collection in $collections){
-                $confName = -join('',"sitecore-xdb1_$sitecorePrefix",$collection)
+                $confName = -join('',"sitecore-xdb_$sitecorePrefix",$collection)
                 Write-Host $confName
                 $form = @{
                     name = $confName
@@ -160,91 +160,6 @@ function Create-Collections($solrVersion, $token) {
     }
 }
 
-function Update-XML($path, $xpath, $attributeKey, $attributeValue){
-    if (Test-Path -LiteralPath $path) {
-        $xml = New-Object XML
-        $xml.Load($path)
-        $node =  $xml.SelectSingleNode($xpath)
-        $node.SetAttribute($attributeKey,$attributeValue)
-        $xml.Save($path)
-    }
-    else {
-         Write-Error -Message "Could not find $path File"
-    }
-}
-
-function Update-WebConfig {
-    "Updating Web.Config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\Web.config")
-    $xpath = "//configuration/appSettings/add[@key='search:define']"
-    $attributeKey = "value"
-    $attributeValue = "Solr"
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-ConnectionStringsConfig ($token) {
-    "Updating ConnectionStrings.Config file"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\ConnectionStrings.config")
-    $xpath = "//connectionStrings/add[@name='solr.search']"
-    $solr = Get-SolrUrl $token
-    $solr = $solr.substring(0,$solr.length-1)
-    if ($solrUsername.length -gt 0) {
-        $solr = -join("https://",$solrUsername,":",$solrPassword,"@",$solr.substring(8,$solr.length-8))
-    }
-
-    $attributeKey = "connectionString"
-    $attributeValue = $solr
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-EnableSearchProvider {
-    "Updating Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Provider']"
-    $attributeKey = "value"
-    $attributeValue = "Solr"
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-MaxNumberOfSearchResults {
-    "Updating Sitecore.ContentSearch.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.SearchMaxResults']"
-    $attributeKey = "value"
-    $attributeValue = $searchMaxResults
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-EnableBatchMode {
-    "Updating Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Update.BatchModeEnabled']"
-    $attributeKey = "value"
-    $attributeValue = "true"
-    Update-XML $path $xpath $attributeKey $attributeValue
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Update.BatchSize']"
-    $attributeKey = "value"
-    $attributeValue = $batchSize
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-SitecoreConfigs ($sitecoreVersion, $token) {
-    if ($sitecoreVersion -eq "9.0.2") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $token
-        Update-EnableSearchProvider
-        Update-MaxNumberOfSearchResults
-        Update-EnableBatchMode
-    } Elseif ($sitecoreVersion -eq "9.1.1") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $token
-    } Elseif ($sitecoreVersion -eq "9.2.0") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $token
-    }
-}
-
-
 if (!($PSVersionTable.PSVersion.Major -ge 6)){
     Write-Host "This script is only compatible with Powershell Core v6 and above."
     Write-Host
@@ -278,10 +193,5 @@ Check-DeploymentExist($token)
 Upload-Config $solrVersion $token
 Get-Node-Count $token
 Create-Collections $solrVersion $token
-Update-SitecoreConfigs $sitecoreVersion $token
-"Restarting IIS"
-"NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
-"Please either disable UAC, or restart IIS manually if the error occurs."
-#& {iisreset}
-#Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
+Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
 Write-Host "FINISHED"
