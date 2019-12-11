@@ -1,9 +1,7 @@
 Import-Module powershell-yaml
 
 $configPath=".\config.yml"
-$solrConfigPath6 = "solr_config-6.zip"
 $solrConfigPath721 = "xconnect_solr-config-7.2.1.zip"
-$solrConfigPath750 = "solr_config-7.5.0.zip"
 $start_time = Get-Date
 $collections = @("_xdb","_xdb_rebuild" )
 $searchstaxUrl = 'https://app.searchstax.com'
@@ -89,24 +87,6 @@ function Upload-Config($solrVersion, $token) {
                 files = Get-Item -Path $solrConfigPath721
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
-        } Elseif ($solrVersion -eq "7.5.0") {
-            $form = @{
-                name = "sitecore-xdb_$sitecorePrefix"
-                files = Get-Item -Path $solrConfigPath750
-            }
-            Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
-        }
-         Elseif ($solrVersion -eq "6") {
-            foreach($collection in $collections){
-                $confName = -join('',"sitecore-xdb_$sitecorePrefix",$collection)
-                Write-Host $confName
-                $form = @{
-                    name = $confName
-                    files = Get-Item -Path $solrConfigPath6
-                }
-                # Write-Host $body
-                Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
-            }
         }
     } catch {
         Write-Error -Message "Unable to upload config file. Error was: $_" -ErrorAction Stop
@@ -142,11 +122,7 @@ function Create-Collections($solrVersion, $token) {
     "Creating Collections ... "
     foreach($collection in $collections){
         $collection | Write-Host
-        if ($solrVersion -eq "6") {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection)
-        } Elseif ($solrVersion -eq "7.2.1") {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore-xdb1_$sitecorePrefix")
-        } Elseif ($solrVersion -eq "7.5.0") {
+        if ($solrVersion -eq "7.2.1") {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore-xdb1_$sitecorePrefix")
         }        
         if ($solrUsername.length -gt 0){
@@ -174,14 +150,10 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 
 Init
 
-if ($sitecoreVersion -eq "9.0.2") {
-    $solrVersion = "6"
-} Elseif ($sitecoreVersion -eq "9.1.1") {
+if ($sitecoreVersion -eq "9.1.1") {
     $solrVersion = "7.2.1"
-} Elseif ($sitecoreVersion -eq "9.2.0") {
-    $solrVersion = "7.5.0"
 } else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2 and 9.1.1" -ErrorAction Stop
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.1.1" -ErrorAction Stop
 }
 
 
