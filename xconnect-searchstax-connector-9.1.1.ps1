@@ -123,7 +123,7 @@ function Create-Collections($solrVersion, $token) {
     foreach($collection in $collections){
         $collection | Write-Host
         if ($solrVersion -eq "7.2.1") {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore-xdb1_$sitecorePrefix")
+            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore-xdb_$sitecorePrefix")
         }        
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
