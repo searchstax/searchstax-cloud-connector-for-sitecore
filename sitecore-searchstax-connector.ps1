@@ -6,7 +6,7 @@ $solrConfigPath721 = "solr_config-7.2.1.zip"
 $solrConfigPath750 = "solr_config-7.5.0.zip"
 $solrConfigPath811 = "solr_config-8.1.1.zip"
 $start_time = Get-Date
-$collections = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
+$collections = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
 $searchstaxUrl = 'https://app.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE

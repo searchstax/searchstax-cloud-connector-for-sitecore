@@ -3,7 +3,7 @@ Import-Module powershell-yaml
 $configPath=".\config.yml"
 $solrConfigPath811 = "xconnect_solr-config-8.1.1.zip"
 $start_time = Get-Date
-$collections = @("_xdb","_xdb_rebuild" )
+$collections = @("xdb_internal","xdb_rebuild_internal" )
 $searchstaxUrl = 'https://app.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE
@@ -83,7 +83,8 @@ function Upload-Config($solrVersion, $token) {
 
         if ($solrVersion -eq "8.1.1") {
             $form = @{
-                name = "sitecore-xdb_$sitecorePrefix"
+                #name = "sitecore-xdb_$sitecorePrefix"
+				name = "sitecore-xdb"
                 files = Get-Item -Path $solrConfigPath811
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
@@ -123,7 +124,7 @@ function Create-Collections($solrVersion, $token) {
     foreach($collection in $collections){
         $collection | Write-Host
         if ($solrVersion -eq "8.1.1") {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore-xdb_$sitecorePrefix")
+            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore-xdb")
         }        
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
@@ -166,4 +167,4 @@ Upload-Config $solrVersion $token
 Get-Node-Count $token
 Create-Collections $solrVersion $token
 Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
-Write-Host "FINISHED"
+Write-Host "FINISHED - Please create ALIAS manually as per this document https://doc.sitecore.com/developers/93/platform-administration-and-architecture/en/walkthrough--using-solrcloud-for-xconnect-search.html."
