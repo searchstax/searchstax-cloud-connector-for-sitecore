@@ -3,6 +3,7 @@ settings:
   deploymentUid: "ss881269"
   sitecorePrefix: "demo"
   sitecoreSolrConfigName: "sitecore_demo"
+  sitecoreIndexCollections: ["_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index", "_sxa_master_index", "_sxa_web_index"]
   xdbSolrConfigName: "sitecore-xdb_demo"
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
