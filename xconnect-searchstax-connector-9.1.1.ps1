@@ -3,7 +3,7 @@ Import-Module powershell-yaml
 $configPath=".\config.yml"
 $solrConfigPath721 = "xconnect_solr-config-7.2.1.zip"
 $start_time = Get-Date
-$collections = @("_xdb","_xdb_rebuild" )
+$collections = @("_xdb_internal","_xdb_rebuild_internal" )
 $searchstaxUrl = 'https://app.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE
@@ -137,6 +137,40 @@ function Create-Collections($solrVersion, $token, $solrConfigName) {
     }
 }
 
+function Update-IndexAlias($token)
+{
+    $solr = Get-SolrUrl $token
+    Write-Host $solr
+    if ($solrUsername.length -gt 0){
+        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
+    }
+
+    "Updating XDB Main Index Aliases ... "
+    Write-Host
+        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,"_xdb&collections=",$sitecorePrefix,"_xdb_internal")
+
+    if ($solrUsername.length -gt 0){
+        Invoke-WebRequest -Uri $url -Credential $credential
+    }
+    else {
+        Invoke-WebRequest -Uri $url
+        # Write-Host $url
+    }
+    
+    "Updating XDB Rebuild Index Aliases ... "
+    Write-Host
+        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,"_xdb_rebuild&collections=",$sitecorePrefix,"_xdb_rebuild_internal")
+
+    if ($solrUsername.length -gt 0){
+        Invoke-WebRequest -Uri $url -Credential $credential
+    }
+    else {
+        Invoke-WebRequest -Uri $url
+        # Write-Host $url
+    }        
+}
+
 if (!($PSVersionTable.PSVersion.Major -ge 6)){
     Write-Host "This script is only compatible with Powershell Core v6 and above."
     Write-Host
@@ -166,5 +200,6 @@ Check-DeploymentExist($token)
 Upload-Config $solrVersion $token $xdbSolrConfigName
 Get-Node-Count $token
 Create-Collections $solrVersion $token $xdbSolrConfigName
+Update-IndexAlias $token
 Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
 Write-Host "FINISHED"
