@@ -26,6 +26,10 @@ function Init {
     $global:sitecorePrefix=$yaml.settings.sitecorePrefix
     $global:sitecoreSolrConfigName=$yaml.settings.sitecoreSolrConfigName
     $global:collections=$yaml.settings.sitecoreIndexCollections
+    $global:sitecoreIndexMainAlias=$yaml.settings.sitecoreIndexMainAlias
+    $global:sitecoreIndexRebuildAlias=$yaml.settings.sitecoreIndexRebuildAlias
+    $global:sitecoreIndexCollectionsWithMainAlias=$yaml.settings.sitecoreIndexCollectionsWithMainAlias
+    $global:sitecoreIndexCollectionsWithRebuildAlias=$yaml.settings.sitecoreIndexCollectionsWithRebuildAlias
     $global:pathToWWWRoot=$yaml.settings.pathToWWWRoot
     $global:solrUsername=$yaml.settings.solrUsername
     $global:solrPassword=$yaml.settings.solrPassword
@@ -245,6 +249,42 @@ function Update-SitecoreConfigs ($sitecoreVersion, $token) {
     }
 }
 
+function Update-IndexAlias($token, $mainAlias, $rebuildAlias, $collectionsWithMainAlias, $collectionsWithRebuildAlias)
+{
+    if ($solrUsername.length -gt 0){
+        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
+    }
+    "Updating Main Index Aliases ... "
+    foreach($collection in $collectionsWithMainAlias){
+        $collection | Write-Host
+            $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$mainAlias,"&collections=",$sitecorePrefix,$collection)
+
+        if ($solrUsername.length -gt 0){
+            Invoke-WebRequest -Uri $url -Credential $credential
+        }
+        else {
+            Invoke-WebRequest -Uri $url
+            # Write-Host $url
+        }
+        
+    }
+
+    "Updating Rebuild Index Aliases ... "
+    foreach($collection in $collectionsWithRebuildAlias){
+        $collection | Write-Host
+            $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$rebuildAlias,"&collections=",$sitecorePrefix,$collection)
+
+        if ($solrUsername.length -gt 0){
+            Invoke-WebRequest -Uri $url -Credential $credential
+        }
+        else {
+            Invoke-WebRequest -Uri $url
+            # Write-Host $url
+        }
+        
+    }           
+}
 
 if (!($PSVersionTable.PSVersion.Major -ge 6)){
     Write-Host "This script is only compatible with Powershell Core v6 and above."
@@ -279,6 +319,7 @@ Check-DeploymentExist($token)
 Upload-Config $solrVersion $token $sitecoreSolrConfigName
 Get-Node-Count $token
 Create-Collections $solrVersion $token $sitecoreSolrConfigName
+Update-IndexAlias $token $sitecoreIndexMainAlias, $sitecoreIndexRebuildAlias, $sitecoreIndexCollectionsWithMainAlias, $sitecoreIndexCollectionsWithRebuildAlias
 Update-SitecoreConfigs $sitecoreVersion $token
 "Restarting IIS"
 "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."

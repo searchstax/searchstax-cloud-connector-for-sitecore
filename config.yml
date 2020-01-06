@@ -4,6 +4,10 @@ settings:
   sitecorePrefix: "demo"
   sitecoreSolrConfigName: "sitecore_demo"
   sitecoreIndexCollections: ["_master_index","_master_index_Rebuild","_core_index","_core_index_Rebuild","_web_index","_web_index_Rebuild","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_sxa_master_index","_sxa_master_index_Rebuild","_sxa_web_index","_sxa_web_index_Rebuild"]
+  sitecoreIndexMainAlias: "MainAlias"
+  sitecoreIndexRebuildAlias: "RebuildAlias"
+  sitecoreIndexCollectionsWithMainAlias: ["_master_index","_core_index","_web_index","_sxa_master_index","_sxa_web_index"]
+  sitecoreIndexCollectionsWithRebuildAlias: ["_master_index_Rebuild","_core_index_Rebuild","_web_index_Rebuild","_sxa_master_index_Rebuild","_sxa_web_index_Rebuild"]
   xdbSolrConfigName: "sitecore-xdb_demo"
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
