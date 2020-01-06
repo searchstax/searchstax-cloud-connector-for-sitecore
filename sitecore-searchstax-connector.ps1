@@ -251,14 +251,17 @@ function Update-SitecoreConfigs ($sitecoreVersion, $token) {
 
 function Update-IndexAlias($token, $mainAlias, $rebuildAlias, $collectionsWithMainAlias, $collectionsWithRebuildAlias)
 {
+    $solr = Get-SolrUrl $token
+    Write-Host $solr
     if ($solrUsername.length -gt 0){
         $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
         $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
     }
+
     "Updating Main Index Aliases ... "
     foreach($collection in $collectionsWithMainAlias){
         $collection | Write-Host
-            $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$mainAlias,"&collections=",$sitecorePrefix,$collection)
+            $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,$collection,$mainAlias,"&collections=",$sitecorePrefix,$collection)
 
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
@@ -273,7 +276,7 @@ function Update-IndexAlias($token, $mainAlias, $rebuildAlias, $collectionsWithMa
     "Updating Rebuild Index Aliases ... "
     foreach($collection in $collectionsWithRebuildAlias){
         $collection | Write-Host
-            $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$rebuildAlias,"&collections=",$sitecorePrefix,$collection)
+            $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,$collection,$rebuildAlias,"&collections=",$sitecorePrefix,$collection)
 
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
@@ -319,7 +322,7 @@ Check-DeploymentExist($token)
 Upload-Config $solrVersion $token $sitecoreSolrConfigName
 Get-Node-Count $token
 Create-Collections $solrVersion $token $sitecoreSolrConfigName
-Update-IndexAlias $token $sitecoreIndexMainAlias, $sitecoreIndexRebuildAlias, $sitecoreIndexCollectionsWithMainAlias, $sitecoreIndexCollectionsWithRebuildAlias
+Update-IndexAlias $token $sitecoreIndexMainAlias $sitecoreIndexRebuildAlias $sitecoreIndexCollectionsWithMainAlias $sitecoreIndexCollectionsWithRebuildAlias
 Update-SitecoreConfigs $sitecoreVersion $token
 "Restarting IIS"
 "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
