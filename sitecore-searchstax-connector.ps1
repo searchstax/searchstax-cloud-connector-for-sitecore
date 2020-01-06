@@ -25,6 +25,7 @@ function Init {
     $global:accountName=$yaml.settings.accountName
     $global:deploymentUid=$yaml.settings.deploymentUid
     $global:sitecorePrefix=$yaml.settings.sitecorePrefix
+    $global:sitecoreSolrConfigName=$yaml.settings.sitecoreSolrConfigName
     $global:pathToWWWRoot=$yaml.settings.pathToWWWRoot
     $global:solrUsername=$yaml.settings.solrUsername
     $global:solrPassword=$yaml.settings.solrPassword
@@ -78,20 +79,20 @@ function Check-DeploymentExist($token) {
     }
 }
 
-function Upload-Config($solrVersion, $token) {
+function Upload-Config($solrVersion, $token, $solrConfigName) {
     try {
         $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
         $headers.Add("Authorization", "Token $token")
 
         if ($solrVersion -eq "7.2.1") {
             $form = @{
-                name = "sitecore_$sitecorePrefix"
+                name = "$solrConfigName"
                 files = Get-Item -Path $solrConfigPath721
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
         } Elseif ($solrVersion -eq "7.5.0") {
             $form = @{
-                name = "sitecore_$sitecorePrefix"
+                name = "$solrConfigName"
                 files = Get-Item -Path $solrConfigPath750
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
@@ -128,7 +129,7 @@ function Get-SolrUrl($token) {
 }
 
 #TODO : Too many moving parts - Add try-catch blocks and make it fault tolerant
-function Create-Collections($solrVersion, $token) {
+function Create-Collections($solrVersion, $token, $solrConfigName) {
     "Getting live node count ..."
     $nodeCount = Get-Node-Count $token
     "Getting live node count ... DONE"
@@ -145,9 +146,9 @@ function Create-Collections($solrVersion, $token) {
         if ($solrVersion -eq "6") {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection)
         } Elseif ($solrVersion -eq "7.2.1") {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
+            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$solrConfigName)
         } Elseif ($solrVersion -eq "7.5.0") {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
+            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$solrConfigName)
         }        
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
@@ -275,9 +276,9 @@ Write-Host "Solr Version - $solrVersion"
 Write-Host
 $token = Get-Token
 Check-DeploymentExist($token)
-Upload-Config $solrVersion $token
+Upload-Config $solrVersion $token $sitecoreSolrConfigName
 Get-Node-Count $token
-Create-Collections $solrVersion $token
+Create-Collections $solrVersion $token $sitecoreSolrConfigName
 Update-SitecoreConfigs $sitecoreVersion $token
 "Restarting IIS"
 "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."

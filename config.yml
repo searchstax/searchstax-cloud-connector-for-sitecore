@@ -2,6 +2,8 @@ settings:
   accountName: "MyAccountName"
   deploymentUid: "ss881269"
   sitecorePrefix: "demo"
+  sitecoreSolrConfigName: "sitecore_demo"
+  xdbSolrConfigName: "sitecore-xdb_demo"
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
   solrPassword: ""
