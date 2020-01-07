@@ -9,7 +9,7 @@ It does following:
 ## Supported Sitecore Versions
 Currently the script only supports following sitecore versions:
 - 9.0 Update-2 (9.0.2)
-- 9.1 Update-1 (9.1.1) 
+- 9.1 Update-1 (9.1.1) with SwitchOnSolrCloudRebuild support for both XConnect and Sitecore
 - 9.2 Initial Update (9.2.0)
 
 ## Requirements
@@ -58,6 +58,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 5. Go to your sitecore page > Control Panel > Populate Solr Managed Schema > Select All > Populate
 6. On the same page, Indexing Manager > Select All > Rebuild
+7. For Sitecore 9.1.1 XConnect, execute the following command
+```powershell
+.\xconnect-searchstax-connector-9.1.1.ps1
+```
 
 ## How can I get help with SearchStax Sitecore Plugin?
 
