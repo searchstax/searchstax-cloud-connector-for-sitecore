@@ -4,8 +4,9 @@ $configPath=".\config.yml"
 $solrConfigPath6 = "solr_config-6.zip"
 $solrConfigPath721 = "solr_config-7.2.1.zip"
 $solrConfigPath750 = "solr_config-7.5.0.zip"
+$solrConfigPath811 = "solr_config-8.1.1.zip"
 $start_time = Get-Date
-$collections = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
+$collections = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
 $searchstaxUrl = 'https://app.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE
@@ -96,6 +97,13 @@ function Upload-Config($solrVersion, $token) {
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
         }
+		 Elseif ($solrVersion -eq "8.1.1") {
+            $form = @{
+                name = "sitecore_$sitecorePrefix"
+                files = Get-Item -Path $solrConfigPath811
+            }
+            Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
+        }
          Elseif ($solrVersion -eq "6") {
             foreach($collection in $collections){
                 $confName = -join('',$sitecorePrefix,$collection)
@@ -148,7 +156,11 @@ function Create-Collections($solrVersion, $token) {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
         } Elseif ($solrVersion -eq "7.5.0") {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
-        }        
+        }
+		Elseif ($solrVersion -eq "8.1.1") {
+            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
+        }
+        
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
@@ -242,6 +254,10 @@ function Update-SitecoreConfigs ($sitecoreVersion, $token) {
         Update-WebConfig
         Update-ConnectionStringsConfig $token
     }
+	Elseif ($sitecoreVersion -eq "9.3.0") {
+        Update-WebConfig
+        Update-ConnectionStringsConfig $token
+    }
 }
 
 
@@ -265,7 +281,11 @@ if ($sitecoreVersion -eq "9.0.2") {
     $solrVersion = "7.2.1"
 } Elseif ($sitecoreVersion -eq "9.2.0") {
     $solrVersion = "7.5.0"
-} else {
+}
+Elseif ($sitecoreVersion -eq "9.3.0") {
+    $solrVersion = "8.1.1"
+}
+ else {
     Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2 and 9.1.1" -ErrorAction Stop
 }
 
