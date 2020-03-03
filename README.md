@@ -69,4 +69,4 @@ You can use GitHub to submit [bug reports](https://github.com/searchstax/searchs
 ### IP Filtering
 If you have enabled IP filtering on your Solr instance, then make sure that you add the IP/CIDR block of your network or machine to the IP Filtering page. For more instructions on how to set up IP filtering, please follow our guide here - [How To Set-up IP Filtering](https://www.searchstax.com/docs/security/#IPfilter)
 ### Sitecore v9.0 Update-2
-The plugin will automatically default to creating a separate config directory for every collection.
+The plugin will automatically defaults to creating a separate config directory for every collection.
