@@ -45,7 +45,7 @@ It contains following fields:
 |solrUsername| Solr username (Optional)||
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 9.1.1|
-|isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections | true/false|
+|isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
 
 ### Instructions
 1. Configure the `config.yml` file.
@@ -68,3 +68,5 @@ You can use GitHub to submit [bug reports](https://github.com/searchstax/searchs
 ## FAQ
 ### IP Filtering
 If you have enabled IP filtering on your Solr instance, then make sure that you add the IP/CIDR block of your network or machine to the IP Filtering page. For more instructions on how to set up IP filtering, please follow our guide here - [How To Set-up IP Filtering](https://www.searchstax.com/docs/security/#IPfilter)
+### Sitecore v9.0 Update-2
+The plugin will automatically default to creating a separate config directory for every collection.
