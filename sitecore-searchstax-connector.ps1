@@ -1,11 +1,13 @@
 Import-Module powershell-yaml
 
 $configPath=".\config.yml"
-$solrConfigPath6 = "solr_config-6.zip"
-$solrConfigPath721 = "solr_config-7.2.1.zip"
-$solrConfigPath750 = "solr_config-7.5.0.zip"
+$solrConfigPath6 = ".\Configs\solr_config-6.zip"
+$solrConfigPath721 = ".\Configs\solr_config-7.2.1.zip"
+$solrConfigPath750 = ".\Configs\solr_config-7.5.0.zip"
+$solrConfigPath811 = ".\Configs\solr_config-8.1.1.zip"
 $start_time = Get-Date
 $collections = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
+$collections93 = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
 $searchstaxUrl = 'https://app.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE
@@ -29,6 +31,14 @@ function Init {
     $global:solrUsername=$yaml.settings.solrUsername
     $global:solrPassword=$yaml.settings.solrPassword
     $global:sitecoreVersion=$yaml.settings.sitecoreVersion
+    if ($yaml.settings.isUniqueConfigs -eq "true") {
+        $global:isUniqueConfigs= $true
+    } Elseif ($yaml.settings.isUniqueConfigs -eq "false") {
+        $global:isUniqueConfigs= $false
+    } else {
+        Write-Error -Message "Invalid value provided for isUniqueConfigs. [true/false]" -ErrorAction Stop
+    }
+
     $global:deploymentReadUrl = -join($searchstaxUrl,'/api/rest/v2/account/',$accountName,'/deployment/',$deploymentUid,'/')
     $global:configUploadUrl = -join($searchstaxUrl,'/api/rest/v2/account/',$accountName,'/deployment/',$deploymentUid,'/zookeeper-config/')
 }
@@ -82,32 +92,37 @@ function Upload-Config($solrVersion, $token) {
     try {
         $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
         $headers.Add("Authorization", "Token $token")
-
         if ($solrVersion -eq "7.2.1") {
-            $form = @{
-                name = "sitecore_$sitecorePrefix"
-                files = Get-Item -Path $solrConfigPath721
-            }
-            Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
+            $solrConfigPath= $solrConfigPath721
         } Elseif ($solrVersion -eq "7.5.0") {
-            $form = @{
-                name = "sitecore_$sitecorePrefix"
-                files = Get-Item -Path $solrConfigPath750
-            }
-            Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
+            $solrConfigPath= $solrConfigPath750
+        }
+         Elseif ($solrVersion -eq "8.1.1") {
+            $solrConfigPath= $solrConfigPath811
         }
          Elseif ($solrVersion -eq "6") {
-            foreach($collection in $collections){
+            $solrConfigPath=  $solrConfigPath6
+        }
+
+        if ($isUniqueConfigs) {
+            foreach($collection in $coll){
                 $confName = -join('',$sitecorePrefix,$collection)
                 Write-Host $confName
                 $form = @{
                     name = $confName
-                    files = Get-Item -Path $solrConfigPath6
+                    files = Get-Item -Path $solrConfigPath
                 }
                 # Write-Host $body
                 Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
             }
+        } else {
+            $form = @{
+                name = "sitecore_$sitecorePrefix"
+                files = Get-Item -Path $solrConfigPath
+            }
+            Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
         }
+
     } catch {
         Write-Error -Message "Unable to upload config file. Error was: $_" -ErrorAction Stop
     }    
@@ -128,7 +143,7 @@ function Get-SolrUrl($token) {
 }
 
 #TODO : Too many moving parts - Add try-catch blocks and make it fault tolerant
-function Create-Collections($solrVersion, $token) {
+function Create-Collections($token) {
     "Getting live node count ..."
     $nodeCount = Get-Node-Count $token
     "Getting live node count ... DONE"
@@ -140,15 +155,16 @@ function Create-Collections($solrVersion, $token) {
         $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
     }
     "Creating Collections ... "
-    foreach($collection in $collections){
+
+    foreach($collection in $coll){
         $collection | Write-Host
-        if ($solrVersion -eq "6") {
+        if ($isUniqueConfigs) {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection)
-        } Elseif ($solrVersion -eq "7.2.1") {
+        } else {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
-        } Elseif ($solrVersion -eq "7.5.0") {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
-        }        
+        }
+
+        
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
@@ -242,6 +258,10 @@ function Update-SitecoreConfigs ($sitecoreVersion, $token) {
         Update-WebConfig
         Update-ConnectionStringsConfig $token
     }
+	Elseif ($sitecoreVersion -eq "9.3.0") {
+        Update-WebConfig
+        Update-ConnectionStringsConfig $token
+    }
 }
 
 
@@ -259,14 +279,25 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 
 Init
 
+
+
 if ($sitecoreVersion -eq "9.0.2") {
     $solrVersion = "6"
+    $global:isUniqueConfigs= $true
+    $global:coll = $collections
 } Elseif ($sitecoreVersion -eq "9.1.1") {
     $solrVersion = "7.2.1"
+    $global:coll = $collections
 } Elseif ($sitecoreVersion -eq "9.2.0") {
     $solrVersion = "7.5.0"
-} else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2 and 9.1.1" -ErrorAction Stop
+    $global:coll = $collections
+}
+Elseif ($sitecoreVersion -eq "9.3.0") {
+    $solrVersion = "8.1.1"
+    $global:coll = $collections93
+}
+ else {
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, and 9.3.0" -ErrorAction Stop
 }
 
 
@@ -277,7 +308,7 @@ $token = Get-Token
 Check-DeploymentExist($token)
 Upload-Config $solrVersion $token
 Get-Node-Count $token
-Create-Collections $solrVersion $token
+Create-Collections $token
 Update-SitecoreConfigs $sitecoreVersion $token
 "Restarting IIS"
 "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
