@@ -1,8 +1,9 @@
 settings:
-  accountName: "MyAccountName"
-  deploymentUid: "ss881269"
-  sitecorePrefix: "demo"
+  accountName: "SilverQAAccount"
+  deploymentUid: "ss127402"
+  sitecorePrefix: "sitecore930"
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
   solrPassword: ""
-  sitecoreVersion : "9.3.0" #Supported versions - 9.0.2, 9.1.1, 9.2.0 and 9.3.0
+  sitecoreVersion : "9.3.0"               # Supported versions - 9.0.2, 9.1.1, 9.2.0 and 9.3.0
+  isUniqueConfigs: "true"                # [true/false] 

@@ -11,6 +11,7 @@ Currently the script only supports following sitecore versions:
 - 9.0 Update-2 (9.0.2)
 - 9.1 Update-1 (9.1.1) 
 - 9.2 Initial Update (9.2.0)
+- 9.3 Initial Update (9.3.0)
 
 ## Requirements
 - Powershell Core v6 or above
@@ -44,6 +45,7 @@ It contains following fields:
 |solrUsername| Solr username (Optional)||
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 9.1.1|
+|isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections | true/false|
 
 ### Instructions
 1. Configure the `config.yml` file.
