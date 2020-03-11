@@ -6,4 +6,5 @@ settings:
   solrUsername: ""
   solrPassword: ""
   sitecoreVersion : "9.3.0"               # Supported versions - 9.0.2, 9.1.1, 9.2.0 and 9.3.0
-  isUniqueConfigs: "true"                # [true/false] 
+  isUniqueConfigs: "true"                 # [true/false] 
+  installationMode: "XP|XCONNECT"         # ["XP" "XCONNECT" "XP|XCONNECT"]
