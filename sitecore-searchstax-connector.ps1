@@ -38,21 +38,21 @@ function Init {
         Write-Error -Message "Invalid value provided for isUniqueConfigs. [true/false]" -ErrorAction Stop
     }
 
-    $global:installationMode=$yaml.settings.installationMode
-    $installationModeArray=$installationMode.split("|")
-    $global:isInstallXP=$false
-    $global:isInstallXConnect=$false
-    foreach($instMode in $installationModeArray){
+    $global:configurationMode=$yaml.settings.configurationMode
+    $configurationModeArray=$configurationMode.split("|")
+    $global:isConfigureXP=$false
+    $global:isConfigureXConnect=$false
+    foreach($instMode in $configurationModeArray){
         if($instMode.ToUpper() -eq "XP"){
-            $global:isInstallXP=$true
+            $global:isConfigureXP=$true
         } Elseif ($instMode.ToUpper() -eq "XCONNECT") {
-            $global:isInstallXConnect=$true
+            $global:isConfigureXConnect=$true
         } else {
-            Write-Error -Message "Invalid installation mode" -ErrorAction Stop
+            Write-Error -Message "Invalid Configuration mode" -ErrorAction Stop
         }
     }
-    if (-Not $isInstallXP -And -Not $isInstallXConnect){
-        Write-Error -Message "Please select at least 1 installation mode" -ErrorAction Stop
+    if (-Not $isConfigureXP -And -Not $isConfigureXConnect){
+        Write-Error -Message "Please select at least 1 Configuration mode" -ErrorAction Stop
     }
 
     $global:deploymentReadUrl = -join($searchstaxUrl,'/api/rest/v2/account/',$accountName,'/deployment/',$deploymentUid,'/')
@@ -416,7 +416,7 @@ Elseif ($sitecoreVersion -eq "9.3.0") {
 
 Write-Host "Sitecore Version    - $sitecoreVersion"
 Write-Host "Solr Version        - $solrVersion"
-Write-Host "Installation Mode   - $installationMode"
+Write-Host "Configuration Mode   - $configurationMode"
 Write-Host
 $token = Get-Token
 Check-DeploymentExist($token)
@@ -426,13 +426,13 @@ $nodeCount = Get-Node-Count $token
 "Number of nodes - $nodeCount"
 $solr = Get-SolrUrl $token
 
-if ($isInstallXP){
+if ($isConfigureXP){
     Upload-Config $solrVersion $token
     Create-Collections $solr $nodeCount
     Update-SitecoreConfigs $sitecoreVersion $solr
 }
 
-if ($isInstallXConnect){
+if ($isConfigureXConnect){
     Upload-XConnect-Config $solrVersion $token
     Create-XConnect-Collections $solr $nodeCount
     Create-XConnect-Alias $solr $nodeCount
