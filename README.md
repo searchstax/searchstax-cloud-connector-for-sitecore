@@ -7,7 +7,7 @@ It does following:
 - Configure sitecore files
 
 ## Supported Sitecore Versions
-Currently the script only supports following sitecore versions:
+Currently the script only supports following sitecore XP versions and their XConnect:
 - 9.0 Update-2 (9.0.2)
 - 9.1 Update-1 (9.1.1) 
 - 9.2 Initial Update (9.2.0)
@@ -46,6 +46,7 @@ It contains following fields:
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 9.1.1|
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
+|configurationMode| Select if you want to configure only Sitecore XP, or only XConnect, or both| XP\|XCONNECT|
 
 ### Instructions
 1. Configure the `config.yml` file.
