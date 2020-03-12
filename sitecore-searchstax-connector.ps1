@@ -444,6 +444,6 @@ if ($isConfigureXConnect){
 "Restarting IIS"
 "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
 "Please either disable UAC, or restart IIS manually if the error occurs."
-# & {iisreset}
+& {iisreset}
 Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
 Write-Host "FINISHED"
