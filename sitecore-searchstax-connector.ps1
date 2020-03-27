@@ -23,6 +23,8 @@ function Init {
         $content = $content + "`n" + $line 
     }
     $yaml = ConvertFrom-YAML $content
+
+    # Get base values
     $global:accountName=$yaml.settings.accountName
     $global:deploymentUid=$yaml.settings.deploymentUid
     $global:sitecorePrefix=$yaml.settings.sitecorePrefix
@@ -30,14 +32,9 @@ function Init {
     $global:solrUsername=$yaml.settings.solrUsername
     $global:solrPassword=$yaml.settings.solrPassword
     $global:sitecoreVersion=$yaml.settings.sitecoreVersion
-    if ($yaml.settings.isUniqueConfigs -eq "true") {
-        $global:isUniqueConfigs= $true
-    } Elseif ($yaml.settings.isUniqueConfigs -eq "false") {
-        $global:isUniqueConfigs= $false
-    } else {
-        Write-Error -Message "Invalid value provided for isUniqueConfigs. [true/false]" -ErrorAction Stop
-    }
+    $global:isUniqueConfigs=Get-BooleanValue $yaml.settings.isUniqueConfigs
 
+    # Get configuration mode
     $global:configurationMode=$yaml.settings.configurationMode
     $configurationModeArray=$configurationMode.split("|")
     $global:isConfigureXP=$false
@@ -47,14 +44,25 @@ function Init {
             $global:isConfigureXP=$true
         } Elseif ($instMode.ToUpper() -eq "XCONNECT") {
             $global:isConfigureXConnect=$true
+        } Elseif ($instMode.ToUpper() -eq "COMMERCE") {
+            $global:isConfigureCommerce=$true
         } else {
             Write-Error -Message "Invalid Configuration mode" -ErrorAction Stop
         }
     }
-    if (-Not $isConfigureXP -And -Not $isConfigureXConnect){
+    if (-Not $isConfigureXP -And -Not $isConfigureXConnect -And -Not $isConfigureCommerce){
         Write-Error -Message "Please select at least 1 Configuration mode" -ErrorAction Stop
     }
 
+    # Get Values for Commerce if Configuration mode is Commerce
+    if ($isConfigureCommerce) {
+        $global:commerceServicesPostfix = $yaml.settings.Commerce.CommerceServicesPostfix
+        $global:isXCSwitchOnRebuild = Get-BooleanValue $yaml.settings.Commerce.isXCSwitchOnRebuild
+    }
+
+
+
+    # Configure internal variables
     $global:deploymentReadUrl = -join($searchstaxUrl,'/api/rest/v2/account/',$accountName,'/deployment/',$deploymentUid,'/')
     $global:configUploadUrl = -join($searchstaxUrl,'/api/rest/v2/account/',$accountName,'/deployment/',$deploymentUid,'/zookeeper-config/')
 
@@ -63,10 +71,21 @@ function Init {
     $global:xConnectCollectionAlias.Add("xdb_rebuild_internal", "xdb_rebuild")
 }
 
+function Get-BooleanValue($val){
+    if ($val -eq "true") {
+        return $true
+    } Elseif ($val -eq "false") {
+        return $false
+    } else {
+        Write-Error -Message "Invalid value provided for boolean. [true/false]" -ErrorAction Stop
+    }
+}
+
 function Get-Token {
     # "Please provide authentication information."
     $uname = Read-Host -Prompt 'Username - '
-    $password = Read-Host -AsSecureString -Prompt 'Password - '
+    # $password = Read-Host -AsSecureString -Prompt 'Password - '
+    $password = "Averylongpassword2"
     $password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
     
     Write-Host "Asking for an authorization token for $uname..."
@@ -377,6 +396,68 @@ function Update-XConnect-Schema ($solr) {
     }
 }
 
+function Get-Name-Commerce-Directories {
+    $allDirectories = Get-ChildItem -Path $pathToWWWRoot -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName
+    $directories = @()
+    foreach($item in $allDirectories){
+        if($item.FullName.contains($commerceServicesPostfix)) {
+            $directories += $item.FullName
+        }
+    }
+
+    return $directories
+}
+
+function Get-Dictionary-For-Collections {
+    $commerceDirectories = Get-Name-Commerce-Directories
+    if($commerceDirectories.Count -lt 1) {
+        Write-Error -Message "Could not find any directories matching the provided PostScript" -ErrorAction Stop
+    }
+    $global:commercePrimaryDict = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+    if ($isXCSwitchOnRebuild){
+        $global:commerceSecondaryDict = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+    }
+    if ($sitecoreVersion -eq "9.3.0"){
+        $path = -join($commerceDirectories[0],"\wwwroot\data\Environments\PlugIn.Search.PolicySet-1.0.0.json")
+        $dataOfPolicyJson = Get-Content -Raw -Path $path | ConvertFrom-Json
+        foreach($item in $dataOfPolicyJson.Policies.'$values'){
+            if($item.'$type' -like 'Sitecore.Commerce.Plugin.Search.SearchScopePolicy, Sitecore.Commerce.Plugin.Search')  {
+                if($item.Name -like "Catalog*") {
+                    $global:commercePrimaryDict.Add("Catalog",$item.CurrentIndexName)
+                    if ($isXCSwitchOnRebuild) {
+                        $global:commerceSecondaryDict.Add("Catalog",$item.SwitchOnRebuildSecondaryIndexName)
+                    }
+                }
+                if($item.Name -like "Order*") {
+                    $global:commercePrimaryDict.Add("Order",$item.CurrentIndexName)
+                    if ($isXCSwitchOnRebuild) {
+                        $global:commerceSecondaryDict.Add("Order",$item.SwitchOnRebuildSecondaryIndexName)
+                    }
+                }
+                if($item.Name -like "Customer*") {
+                    $global:commercePrimaryDict.Add("Customer",$item.CurrentIndexName)
+                    if ($isXCSwitchOnRebuild) {
+                        $global:commerceSecondaryDict.Add("Customer",$item.SwitchOnRebuildSecondaryIndexName)
+                    }
+                }
+                if($item.Name -like "Price*") {
+                    $global:commercePrimaryDict.Add("Price",$item.CurrentIndexName)
+                    if ($isXCSwitchOnRebuild) {
+                        $global:commerceSecondaryDict.Add("Price",$item.SwitchOnRebuildSecondaryIndexName)
+                    }
+                }
+                if($item.Name -like "Promotion*") {
+                    $global:commercePrimaryDict.Add("Promotion",$item.CurrentIndexName)
+                    if ($isXCSwitchOnRebuild) {
+                        $global:commerceSecondaryDict.Add("Promotion",$item.SwitchOnRebuildSecondaryIndexName)
+                    }
+                }
+            }
+        }
+    }
+    $global:commercePrimaryDict
+    $global:commerceSecondaryDict
+}
 
 if (!($PSVersionTable.PSVersion.Major -ge 6)){
     Write-Host "This script is only compatible with Powershell Core v6 and above."
@@ -418,13 +499,13 @@ Write-Host "Sitecore Version    - $sitecoreVersion"
 Write-Host "Solr Version        - $solrVersion"
 Write-Host "Configuration Mode   - $configurationMode"
 Write-Host
-$token = Get-Token
-Check-DeploymentExist($token)
+# $token = Get-Token
+# Check-DeploymentExist($token)
 "Getting live node count ..."
-$nodeCount = Get-Node-Count $token
+# $nodeCount = Get-Node-Count $token
 "Getting live node count ... DONE"
 "Number of nodes - $nodeCount"
-$solr = Get-SolrUrl $token
+# $solr = Get-SolrUrl $token
 
 if ($isConfigureXP){
     Upload-Config $solrVersion $token
@@ -440,10 +521,16 @@ if ($isConfigureXConnect){
     Update-XConnect-Schema $solr
 }
 
+if ($isConfigureCommerce){
+    Write-Host "Installing Commerce"
+    Get-Dictionary-For-Collections
+    Upload-Commerce-Config $solrVersion $token
+}
+
 
 "Restarting IIS"
 "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
 "Please either disable UAC, or restart IIS manually if the error occurs."
-& {iisreset}
+# & {iisreset}
 Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
 Write-Host "FINISHED"
