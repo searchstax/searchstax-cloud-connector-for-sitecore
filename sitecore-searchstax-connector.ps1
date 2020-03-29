@@ -3,6 +3,7 @@ Import-Module powershell-yaml
 $configPath=".\config.yml"
 $xpConfigPath=".\Configs\xp\solr_config-"
 $xConnectConfigPath=".\Configs\xconnect\xconnect-config-"
+$commerceConfigPath=".\Configs\commerce\v"
 $start_time = Get-Date
 $collections = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
 $collections93 = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
@@ -84,8 +85,7 @@ function Get-BooleanValue($val){
 function Get-Token {
     # "Please provide authentication information."
     $uname = Read-Host -Prompt 'Username - '
-    # $password = Read-Host -AsSecureString -Prompt 'Password - '
-    $password = "Averylongpassword2"
+    $password = Read-Host -AsSecureString -Prompt 'Password - '
     $password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
     
     Write-Host "Asking for an authorization token for $uname..."
@@ -127,55 +127,6 @@ function Check-DeploymentExist($token) {
     }
 }
 
-function Upload-Config($solrVersion, $token) {
-    try {
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Authorization", "Token $token")
-
-        $solrConfigPath = -join($xpConfigPath,$solrVersion,'.zip')
-
-        if ($isUniqueConfigs) {
-            foreach($collection in $coll){
-                $confName = -join('',$sitecorePrefix,$collection)
-                Write-Host $confName
-                $form = @{
-                    name = $confName
-                    files = Get-Item -Path $solrConfigPath
-                }
-                # Write-Host $body
-                Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
-            }
-        } else {
-            $form = @{
-                name = "sitecore_$sitecorePrefix"
-                files = Get-Item -Path $solrConfigPath
-            }
-            Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
-        }
-
-    } catch {
-        Write-Error -Message "Unable to upload config file. Error was: $_" -ErrorAction Stop
-    }    
-}
-
-function Upload-XConnect-Config($solrVersion, $token) {
-    try {
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Authorization", "Token $token")
-        $solrConfigPath = -join($xConnectConfigPath,$solrVersion,'.zip')
-        $confName = -join('',$sitecorePrefix,'_xdb')
-        Write-Host $confName
-        $form = @{
-            name = $confName
-            files = Get-Item -Path $solrConfigPath
-        }
-        Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
-
-    } catch {
-        Write-Error -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
-    }    
-}
-
 function Get-Node-Count($token) {
     $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
     $headers.Add("Authorization", "Token $token")
@@ -188,79 +139,6 @@ function Get-SolrUrl($token) {
     $headers.Add("Authorization", "Token $token")
     $result = Invoke-RestMethod -Method Get -ContentType 'application/json' -Headers $headers -uri $deploymentReadUrl
     return $result.http_endpoint
-}
-
-#TODO : Too many moving parts - Add try-catch blocks and make it fault tolerant
-function Create-Collections($solr, $nodeCount) {
-    Write-Host $solr
-    if ($solrUsername.length -gt 0){
-        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
-    }
-    "Creating Collections ... "
-
-    foreach($collection in $coll){
-        $collection | Write-Host
-        if ($isUniqueConfigs) {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection)
-        } else {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
-        }
-
-        
-        if ($solrUsername.length -gt 0){
-            Invoke-WebRequest -Uri $url -Credential $credential
-        }
-        else {
-            Invoke-WebRequest -Uri $url
-            # Write-Host $url
-        }
-        
-    }
-}
-
-function Create-XConnect-Collections($solr, $nodeCount) {
-    Write-Host $solr
-    if ($solrUsername.length -gt 0){
-        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
-    }
-    "Creating XDB Collections ... "
-
-    foreach($collection in $collectionsXConnect){
-        $collection | Write-Host
-        $url = -join($solr, "admin/collections?action=CREATE&name=",$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,"_xdb")
-        if ($solrUsername.length -gt 0){
-            Invoke-WebRequest -Uri $url -Credential $credential
-        }
-        else {
-            Invoke-WebRequest -Uri $url
-            # Write-Host $url
-        }
-        
-    }
-}
-
-function Create-XConnect-Alias($solr, $nodeCount) {
-    Write-Host $solr
-    if ($solrUsername.length -gt 0){
-        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
-    }
-    "Creating XDB Aliases ... "
-
-    foreach($collection in $collectionsXConnect){
-        $collection | Write-Host
-        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$xConnectCollectionAlias[$collection],"&collections=",$collection)
-        if ($solrUsername.length -gt 0){
-            Invoke-WebRequest -Uri $url -Credential $credential
-        }
-        else {
-            Invoke-WebRequest -Uri $url
-            # Write-Host $url
-        }
-        
-    }
 }
 
 function Update-XML($path, $xpath, $attributeKey, $attributeValue){
@@ -276,189 +154,6 @@ function Update-XML($path, $xpath, $attributeKey, $attributeValue){
     }
 }
 
-function Update-WebConfig {
-    "Updating Web.Config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\Web.config")
-    $xpath = "//configuration/appSettings/add[@key='search:define']"
-    $attributeKey = "value"
-    $attributeValue = "Solr"
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-ConnectionStringsConfig ($solr) {
-    "Updating ConnectionStrings.Config file"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\ConnectionStrings.config")
-    $xpath = "//connectionStrings/add[@name='solr.search']"
-    # $solr = Get-SolrUrl $token
-    $solr = $solr.substring(0,$solr.length-1)
-    if ($solrUsername.length -gt 0) {
-        $solr = -join("https://",$solrUsername,":",$solrPassword,"@",$solr.substring(8,$solr.length-8))
-    }
-
-    $attributeKey = "connectionString"
-    $attributeValue = $solr
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-EnableSearchProvider {
-    "Updating Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Provider']"
-    $attributeKey = "value"
-    $attributeValue = "Solr"
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-MaxNumberOfSearchResults {
-    "Updating Sitecore.ContentSearch.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.SearchMaxResults']"
-    $attributeKey = "value"
-    $attributeValue = $searchMaxResults
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-EnableBatchMode {
-    "Updating Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Update.BatchModeEnabled']"
-    $attributeKey = "value"
-    $attributeValue = "true"
-    Update-XML $path $xpath $attributeKey $attributeValue
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Update.BatchSize']"
-    $attributeKey = "value"
-    $attributeValue = $batchSize
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-XConnectConnectionStringsConfig ($solr, $path) {
-    "Updating XConnect ConnectionStrings in '$path' file"    
-    $xpath = "//connectionStrings/add[@name='solrCore']"
-    $solr = $solr.substring(0,$solr.length-1)
-    if ($solrUsername.length -gt 0) {
-        $solr = -join("https://",$solrUsername,":",$solrPassword,"@",$solr.substring(8,$solr.length-8))
-    }
-    $attributeKey = "connectionString"
-    $attributeValue = -join($solr,"/xdb;solrcloud=true")
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
-    if ($sitecoreVersion -eq "9.0.2") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-        Update-EnableSearchProvider
-        Update-MaxNumberOfSearchResults
-        Update-EnableBatchMode
-    } Elseif ($sitecoreVersion -eq "9.1.1") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "9.2.0") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-    }
-	Elseif ($sitecoreVersion -eq "9.3.0") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-    }
-}
-
-function Update-XConnect-SitecoreConfigs ($solr) {
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Config\ConnectionStrings.config")
-    Update-XConnectConnectionStringsConfig $solr $path
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config")
-    Update-XConnectConnectionStringsConfig $solr $path
-}
-
-function Update-XConnect-Schema ($solr) {
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Data\solrcommands\schema.json")
-    $json = Get-Content -Raw -Path $path
-
-    Write-Host $solr
-    if ($solrUsername.length -gt 0){
-        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
-    }
-    "Updating XDB Schema ... "
-
-    foreach($collection in $collectionsXConnect){
-        $collection | Write-Host
-        $url = -join($solr, $collection,"/schema")
-        if ($solrUsername.length -gt 0){
-            Invoke-RestMethod -Uri $url -Credential $credential -ContentType 'application/json' -Method POST -Body $json
-        }
-        else {
-            Invoke-RestMethod -Uri $url -ContentType 'application/json' -Method POST -Body $json
-            # Write-Host $url
-            # Write-Host $json
-        }
-        
-    }
-}
-
-function Get-Name-Commerce-Directories {
-    $allDirectories = Get-ChildItem -Path $pathToWWWRoot -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName
-    $directories = @()
-    foreach($item in $allDirectories){
-        if($item.FullName.contains($commerceServicesPostfix)) {
-            $directories += $item.FullName
-        }
-    }
-
-    return $directories
-}
-
-function Get-Dictionary-For-Collections {
-    $commerceDirectories = Get-Name-Commerce-Directories
-    if($commerceDirectories.Count -lt 1) {
-        Write-Error -Message "Could not find any directories matching the provided PostScript" -ErrorAction Stop
-    }
-    $global:commercePrimaryDict = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    if ($isXCSwitchOnRebuild){
-        $global:commerceSecondaryDict = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    }
-    if ($sitecoreVersion -eq "9.3.0"){
-        $path = -join($commerceDirectories[0],"\wwwroot\data\Environments\PlugIn.Search.PolicySet-1.0.0.json")
-        $dataOfPolicyJson = Get-Content -Raw -Path $path | ConvertFrom-Json
-        foreach($item in $dataOfPolicyJson.Policies.'$values'){
-            if($item.'$type' -like 'Sitecore.Commerce.Plugin.Search.SearchScopePolicy, Sitecore.Commerce.Plugin.Search')  {
-                if($item.Name -like "Catalog*") {
-                    $global:commercePrimaryDict.Add("Catalog",$item.CurrentIndexName)
-                    if ($isXCSwitchOnRebuild) {
-                        $global:commerceSecondaryDict.Add("Catalog",$item.SwitchOnRebuildSecondaryIndexName)
-                    }
-                }
-                if($item.Name -like "Order*") {
-                    $global:commercePrimaryDict.Add("Order",$item.CurrentIndexName)
-                    if ($isXCSwitchOnRebuild) {
-                        $global:commerceSecondaryDict.Add("Order",$item.SwitchOnRebuildSecondaryIndexName)
-                    }
-                }
-                if($item.Name -like "Customer*") {
-                    $global:commercePrimaryDict.Add("Customer",$item.CurrentIndexName)
-                    if ($isXCSwitchOnRebuild) {
-                        $global:commerceSecondaryDict.Add("Customer",$item.SwitchOnRebuildSecondaryIndexName)
-                    }
-                }
-                if($item.Name -like "Price*") {
-                    $global:commercePrimaryDict.Add("Price",$item.CurrentIndexName)
-                    if ($isXCSwitchOnRebuild) {
-                        $global:commerceSecondaryDict.Add("Price",$item.SwitchOnRebuildSecondaryIndexName)
-                    }
-                }
-                if($item.Name -like "Promotion*") {
-                    $global:commercePrimaryDict.Add("Promotion",$item.CurrentIndexName)
-                    if ($isXCSwitchOnRebuild) {
-                        $global:commerceSecondaryDict.Add("Promotion",$item.SwitchOnRebuildSecondaryIndexName)
-                    }
-                }
-            }
-        }
-    }
-    $global:commercePrimaryDict
-    $global:commerceSecondaryDict
-}
-
 if (!($PSVersionTable.PSVersion.Major -ge 6)){
     Write-Host "This script is only compatible with Powershell Core v6 and above."
     Write-Host
@@ -471,9 +166,14 @@ if (!($PSVersionTable.PSVersion.Major -ge 6)){
 
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process pwsh.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
 
+# Initializing Script
+
 Init
+. "src\searchstax-sitecore-xp.ps1"
+. "src\searchstax-sitecore-xconnect.ps1"
+. "src\searchstax-sitecore-commerce.ps1"
 
-
+# Initializing Script Ends
 
 if ($sitecoreVersion -eq "9.0.2") {
     $solrVersion = "6"
@@ -499,13 +199,13 @@ Write-Host "Sitecore Version    - $sitecoreVersion"
 Write-Host "Solr Version        - $solrVersion"
 Write-Host "Configuration Mode   - $configurationMode"
 Write-Host
-# $token = Get-Token
-# Check-DeploymentExist($token)
+$token = Get-Token
+Check-DeploymentExist($token)
 "Getting live node count ..."
-# $nodeCount = Get-Node-Count $token
+$nodeCount = Get-Node-Count $token
 "Getting live node count ... DONE"
 "Number of nodes - $nodeCount"
-# $solr = Get-SolrUrl $token
+$solr = Get-SolrUrl $token
 
 if ($isConfigureXP){
     Upload-Config $solrVersion $token
@@ -522,15 +222,20 @@ if ($isConfigureXConnect){
 }
 
 if ($isConfigureCommerce){
+    if (-Not $sitecoreVersion -eq "9.3.0") {
+        Write-Error -Message "Currently commerce installation is supported for Sitecore v9.3.0 only" -ErrorAction Stop
+    }
     Write-Host "Installing Commerce"
     Get-Dictionary-For-Collections
     Upload-Commerce-Config $solrVersion $token
+    Create-Commerce-Collections $solr $nodeCount
+    Update-Commerce-Configs $solr
 }
 
 
 "Restarting IIS"
 "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
 "Please either disable UAC, or restart IIS manually if the error occurs."
-# & {iisreset}
+& {iisreset}
 Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
 Write-Host "FINISHED"
