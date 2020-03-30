@@ -49,8 +49,8 @@ It contains following fields:
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 9.1.1|
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
-|configurationMode| Select which part of Sitecore your want to configure - "XP", "XCONNECT", "COMMERCE" | XP\|XCONNECT|
-|CommerceServicesPostfix| Suffix used for Sitecore Commerce installation. This is defined in Sitecore XC installation script|"Sc9"|
+|configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT", "COMMERCE" | XP\|XCONNECT|
+|CommerceServicesPostfix| Suffix used for Sitecore Commerce installation. This is defined in Sitecore XC installation script.|"Sc9"|
 |isXCSwitchOnRebuild| Whether Sitecore commerce has been configured to use Switch On Rebuild feature.| true/false|
 
 ### Instructions
@@ -73,7 +73,9 @@ You can use GitHub to submit [bug reports](https://github.com/searchstax/searchs
 
 ## FAQ
 ### Sitecore Commerce
-Currently Sitecore Commerce configuration is supported for only v9.3 - Initial Release
+Currently Sitecore Commerce configuration is supported for only v9.3 - Initial Release.
+### Sitecore SXA
+This plugin currently does not support Sitecore SXA configuration.
 ### IP Filtering
 If you have enabled IP filtering on your Solr instance, then make sure that you add the IP/CIDR block of your network or machine to the IP Filtering page. For more instructions on how to set up IP filtering, please follow our guide here - [How To Set-up IP Filtering](https://www.searchstax.com/docs/security/#IPfilter)
 ### Sitecore v9.0 Update-2
