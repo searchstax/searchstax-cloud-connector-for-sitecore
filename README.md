@@ -1,6 +1,6 @@
 # SearchStax Sitecore Plugin
 ## Introduction
-This script is used to connect a sitcore XP0 installation to a SearchStax' Solr instance. 
+This script is used to connect a Sitcore installation to a SearchStax' Solr instance. 
 It does following: 
 - Upload the config files to Solr
 - Create collections in Solr
@@ -11,6 +11,9 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 9.0 Update-2 (9.0.2)
 - 9.1 Update-1 (9.1.1) 
 - 9.2 Initial Update (9.2.0)
+- 9.3 Initial Update (9.3.0)
+
+Sitecore Commerce:
 - 9.3 Initial Update (9.3.0)
 
 ## Requirements
@@ -46,7 +49,9 @@ It contains following fields:
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 9.1.1|
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
-|configurationMode| Select if you want to configure only Sitecore XP, or only XConnect, or both| XP\|XCONNECT|
+|configurationMode| Select which part of Sitecore your want to configure - "XP", "XCONNECT", "COMMERCE" | XP\|XCONNECT|
+|CommerceServicesPostfix| Suffix used for Sitecore Commerce installation. This is defined in Sitecore XC installation script|"Sc9"|
+|isXCSwitchOnRebuild| Whether Sitecore commerce has been configured to use Switch On Rebuild feature.| true/false|
 
 ### Instructions
 1. Configure the `config.yml` file.
@@ -67,6 +72,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 You can use GitHub to submit [bug reports](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=bug_report.md) or [feature requests](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=feature_request.md) for SearchStax-Sitecore-Plugin. Please do not submit usage questions via GitHub.
 
 ## FAQ
+### Sitecore Commerce
+Currently Sitecore Commerce configuration is supported for only v9.3 - Initial Release
 ### IP Filtering
 If you have enabled IP filtering on your Solr instance, then make sure that you add the IP/CIDR block of your network or machine to the IP Filtering page. For more instructions on how to set up IP filtering, please follow our guide here - [How To Set-up IP Filtering](https://www.searchstax.com/docs/security/#IPfilter)
 ### Sitecore v9.0 Update-2
