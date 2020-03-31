@@ -222,9 +222,6 @@ if ($isConfigureXConnect){
 }
 
 if ($isConfigureCommerce){
-    if (-Not $sitecoreVersion -eq "9.3.0") {
-        Write-Error -Message "Currently commerce installation is supported for Sitecore v9.3.0 only" -ErrorAction Stop
-    }
     Write-Host "Installing Commerce"
     Get-Dictionary-For-Collections
     Upload-Commerce-Config $solrVersion $token

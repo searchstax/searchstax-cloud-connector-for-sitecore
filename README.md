@@ -14,6 +14,7 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 9.3 Initial Update (9.3.0)
 
 Sitecore Commerce:
+- 9.2 Initial Update (9.2.0)
 - 9.3 Initial Update (9.3.0)
 
 ## Requirements
@@ -51,7 +52,7 @@ It contains following fields:
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
 |configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT", "COMMERCE" | XP\|XCONNECT|
 |CommerceServicesPostfix| Suffix used for Sitecore Commerce installation. This is defined in Sitecore XC installation script.|"Sc9"|
-|isXCSwitchOnRebuild| Whether Sitecore commerce has been configured to use Switch On Rebuild feature.| true/false|
+|isXCSwitchOnRebuild| Whether Sitecore commerce has been configured to use Switch On Rebuild feature. (v9.3.0 and above)| true/false|
 
 ### Instructions
 1. Configure the `config.yml` file.
@@ -73,7 +74,7 @@ You can use GitHub to submit [bug reports](https://github.com/searchstax/searchs
 
 ## FAQ
 ### Sitecore Commerce
-Currently Sitecore Commerce configuration is supported for only v9.3 - Initial Release.
+Currently Sitecore Commerce configuration is supported for only v9.2 - Initial Update and v9.3 - Initial Update.
 ### Sitecore SXA
 This plugin currently does not support Sitecore SXA configuration.
 ### IP Filtering
