@@ -63,6 +63,26 @@ function Get-Dictionary-For-Collections {
             }
         }
     }
+    if ($sitecoreVersion -eq "9.2.0"){
+        $path = -join($commerceDirectories[0],"\wwwroot\data\Environments\PlugIn.Search.PolicySet-1.0.0.json")
+        $dataOfPolicyJson = Get-Content -Raw -Path $path | ConvertFrom-Json
+        foreach($item in $dataOfPolicyJson.Policies.'$values'){
+            if($item.'$type' -like 'Sitecore.Commerce.Plugin.Search.SearchScopePolicy, Sitecore.Commerce.Plugin.Search')  {
+                if($item.Name -like "Catalog*") {
+                    $global:commercePrimaryDict.Add("Catalog",$item.Name)
+                    $global:commerceConfigDict.Add("Catalog","CECatalogItemsIndexConfig")
+                }
+                if($item.Name -like "Order*") {
+                    $global:commercePrimaryDict.Add("Order",$item.Name)
+                    $global:commerceConfigDict.Add("Order","CEOrdersIndexConfig")
+                }
+                if($item.Name -like "Customer*") {
+                    $global:commercePrimaryDict.Add("Customer",$item.Name)
+                    $global:commerceConfigDict.Add("Customer","CECustomersIndexConfig")
+                }
+            }
+        }
+    }
     # $global:commercePrimaryDict
     # $global:commerceSecondaryDict
 }
@@ -123,13 +143,14 @@ function Create-Commerce-Collections($solr, $nodeCount) {
 function Update-Commerce-Configs ($solr) {
     $commerceDirectories = Get-Name-Commerce-Directories
     $solr = $solr.substring(0,$solr.length-1)
-    if ($solrUsername.length -gt 0) {
-        $solr = -join("https://",$solrUsername,":",$solrPassword,"@",$solr.substring(8,$solr.length-8))
-    }
+    
     if($commerceDirectories.Count -lt 1) {
         Write-Error -Message "Could not find any directories matching the provided PostScript" -ErrorAction Stop
     }
     if ($sitecoreVersion -eq "9.3.0"){
+        if ($solrUsername.length -gt 0) {
+            $solr = -join("https://",$solrUsername,":",$solrPassword,"@",$solr.substring(8,$solr.length-8))
+        }
         foreach($directory in $commerceDirectories){
             $path = -join($directory,"\wwwroot\data\Environments\PlugIn.Search.Solr.PolicySet-1.0.0.json")
             Write-Host "Updating config -" $path
@@ -143,4 +164,24 @@ function Update-Commerce-Configs ($solr) {
             $dataOfPolicyJson | ConvertTo-Json -depth 100 | Out-File $path
         }        
     }
+    if ($sitecoreVersion -eq "9.2.0"){
+        foreach($directory in $commerceDirectories){
+            $path = -join($directory,"\wwwroot\data\Environments\PlugIn.Search.Solr.PolicySet-1.0.0.json")
+            Write-Host "Updating config -" $path
+            $dataOfPolicyJson = Get-Content -Raw -Path $path | ConvertFrom-Json
+            foreach($item in $dataOfPolicyJson.Policies.'$values'){
+                if($item.'$type' -like 'Sitecore.Commerce.Plugin.Search.Solr.SolrSearchPolicy, Sitecore.Commerce.Plugin.Search.Solr')  {
+                    $item.SolrUrl = $solr
+                    $item.IsSolrCloud = $True
+                    if ($solrUsername.length -gt 0) {
+                        $item.SolrUserName = $solrUsername
+                        $item.SolrPassword = $solrPassword
+                    }
+                }
+            }
+            $dataOfPolicyJson | ConvertTo-Json -depth 100 | Out-File $path
+        }        
+    }
+
+    
 }
