@@ -57,8 +57,8 @@ function Init {
 
     # Get Values for Commerce if Configuration mode is Commerce
     if ($isConfigureCommerce) {
-        $global:commerceServicesPostfix = $yaml.settings.Commerce.CommerceServicesPostfix
-        $global:isXCSwitchOnRebuild = Get-BooleanValue $yaml.settings.Commerce.isXCSwitchOnRebuild
+        $global:commerceServicesPostfix = $yaml.settings.commerce.commerceServicesPostfix
+        $global:isXCSwitchOnRebuild = Get-BooleanValue $yaml.settings.commerce.isXCSwitchOnRebuild
     }
 
 

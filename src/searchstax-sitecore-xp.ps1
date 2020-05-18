@@ -69,7 +69,7 @@ function Update-ConnectionStringsConfig ($solr) {
     }
 
     $attributeKey = "connectionString"
-    $attributeValue = $solr
+    $attributeValue = -join($solr,";solrCloud=true")
     Update-XML $path $xpath $attributeKey $attributeValue
 }
 

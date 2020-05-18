@@ -73,6 +73,17 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 You can use GitHub to submit [bug reports](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=bug_report.md) or [feature requests](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=feature_request.md) for SearchStax-Sitecore-Plugin. Please do not submit usage questions via GitHub.
 
 ## FAQ
+### SolrCloud
+This script by default sets "solrCloud=true" in all the connection strings because all the deployments at SearchStax work in a SolrCloud mode.
+#### Limitations of setting solrCloud=true
+There is a known bug in Sitecore where if solrCloud=true is added to Sitecore XP then Sitecore tries to connect to private IP of Solr cluster when opening the "Index Manager" dialog box. 
+Here is an excerpt from Sitecore regarding this bug:
+>The described error is related to the inability to connect to the private IP address which causes the timeout. As I can understand this is an internal Solr cluster node IP address that is in a private network. It looks like Sitecore tries to access each replica which is on a private network for security reasons and as expected, this causes a time out and result "Unable to connect to the remote server" exception. The error only appears when using "Index Manager", because it tries to get "Index statistics" from the inner SOLR nodes. Please note that we have registered this behavior as a bug in our tracking system.
+>To track the future status of this bug report, please use the reference number 355209.
+>More information about public reference numbers can be found here: https://kb.sitecore.net/articles/853187>>
+>
+>As a workaround of the issue, please consider rebuilding indexes via Content Editor. I am looking forward to hearing from you
+
 ### Sitecore Commerce
 Currently Sitecore Commerce configuration is supported for only v9.2 - Initial Update and v9.3 - Initial Update.
 ### Sitecore SXA
