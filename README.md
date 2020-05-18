@@ -77,6 +77,7 @@ You can use GitHub to submit [bug reports](https://github.com/searchstax/searchs
 This script by default sets "solrCloud=true" in all the connection strings because all the deployments at SearchStax work in a SolrCloud mode.
 #### Limitations of setting solrCloud=true
 There is a known bug in Sitecore where if solrCloud=true is added to Sitecore XP/XM then Sitecore tries to connect to private IP of Solr cluster when opening the "Index Manager" dialog box. This causes a delay of 10-15mins in the time it takes for dialog box to pop-up.
+
 As a workaround, you can consider rebuilding the indexes via the Content Editor.
 
 ### Sitecore Commerce
