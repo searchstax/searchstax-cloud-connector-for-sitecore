@@ -67,7 +67,7 @@ function Update-ConnectionStringsConfig ($solr) {
     if ($solrUsername.length -gt 0) {
         $solr = -join("https://",$solrUsername,":",$solrPassword,"@",$solr.substring(8,$solr.length-8))
     }
-
+    $solr = -join($solr,";solrCloud=true")
     $attributeKey = "connectionString"
     $attributeValue = $solr
     Update-XML $path $xpath $attributeKey $attributeValue
@@ -126,9 +126,12 @@ function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
     } Elseif ($sitecoreVersion -eq "9.2.0") {
         Update-WebConfig
         Update-ConnectionStringsConfig $solr
-    }
-    Elseif ($sitecoreVersion -eq "9.3.0") {
+    } Elseif ($sitecoreVersion -eq "9.3.0") {
+        Update-WebConfig
+        Update-ConnectionStringsConfig $solr
+    } Elseif ($sitecoreVersion -eq "10.0.0") {
         Update-WebConfig
         Update-ConnectionStringsConfig $solr
     }
+
 }
