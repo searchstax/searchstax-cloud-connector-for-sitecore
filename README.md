@@ -12,6 +12,7 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 9.1 Update-1 (9.1.1) 
 - 9.2 Initial Update (9.2.0)
 - 9.3 Initial Update (9.3.0)
+- 10.0 Initial Update (10.0.0)
 
 Sitecore Commerce:
 - 9.2 Initial Update (9.2.0)
@@ -73,6 +74,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 You can use GitHub to submit [bug reports](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=bug_report.md) or [feature requests](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=feature_request.md) for SearchStax-Sitecore-Plugin. Please do not submit usage questions via GitHub.
 
 ## FAQ
+### Recommended Performance Optimization Settings by Sitecore
+Sitecore recommends updating some settings for performance optimization when working with Solr. You can find more details here: [Performance optimizations when using Solr](https://kb.sitecore.net/articles/671173)
+
 ### Sitecore Commerce
 Currently Sitecore Commerce configuration is supported for only v9.2 - Initial Update and v9.3 - Initial Update.
 ### Sitecore SXA
