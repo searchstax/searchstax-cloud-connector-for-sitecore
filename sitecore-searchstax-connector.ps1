@@ -236,7 +236,9 @@ if ($isConfigureCommerce){
         Create-Commerce-Collections $solr $nodeCount
         Update-Commerce-Configs $solr
     } else {
+        Write-Host "****************************************************************"
         Write-Host "Commerce setup for Azure PaaS is currently not supported"
+        Write-Host "****************************************************************"
     }
     
 }
@@ -266,17 +268,17 @@ if($isAzurePaaS){
         Write-Host "   of the search:define setting to Solr"
         Write-Host
         Write-Host "    <AppSettings>"
-        Write-Host "        <add key=\`"role:define\`" value=\`"ContentDelivery\`"/>"
-        Write-Host "        <add key=\`"search:define\`" value=\`"Solr\`"/>"
+        Write-Host "        <add key=`"role:define`" value=`"ContentDelivery`"/>"
+        Write-Host "        <add key=`"search:define`" value=`"Solr`"/>"
         Write-Host "    </AppSettings>"
         Write-Host
         Write-Host "****************************************************************"
         Write-Host "Configuring the Solr endpoint:"
         Write-Host "1. Navigate to App_Config/ConnectionStrings.config"
-        Write-Host "2. Locate <add> tag with an attribute \`"solr.search\`" "
+        Write-Host "2. Locate <add> tag with an attribute `"solr.search`" "
         Write-Host "    and change the value of connectionString."
         Write-Host
-        Write-Host "<add name=\`"solr.search\`" connectionString=\`"$solrConn\`"/>"
+        Write-Host "<add name=`"solr.search`" connectionString=`"$solrConn`"/>"
         Write-Host
         Write-Host "****************************************************************"
     }
@@ -290,17 +292,17 @@ if($isAzurePaaS){
         Write-Host "****************************************************************"
         Write-Host "Update the connection string for xConnect:"
         Write-Host "1. Navigate to App_Config/ConnectionStrings.config for xConnect"
-        Write-Host "2. Locate <add> tag with an attribute \`"solrCore\`" "
+        Write-Host "2. Locate <add> tag with an attribute `"solrCore`" "
         Write-Host "    and change the value of connectionString."
         Write-Host
-        Write-Host "<add name=\`"solrCore\`" connectionString=\`"$solrConn\`" />"
+        Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
         Write-Host
         Write-Host "3. Navigate to App_Data\jobs\continuous\IndexWorker\"
         Write-Host "    App_Config\ConnectionStrings.config for xConnect"
-        Write-Host "4. Locate <add> tag with an attribute \`"solrCore\`" "
+        Write-Host "4. Locate <add> tag with an attribute `"solrCore`" "
         Write-Host "    and change the value of connectionString."
         Write-Host
-        Write-Host "<add name=\`"solrCore\`" connectionString=\`"$solrConn\`" />"
+        Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
         Write-Host
         Write-Host "****************************************************************"
         Write-Host "Update xConnect Schema:"
@@ -311,6 +313,7 @@ if($isAzurePaaS){
         Write-Host
         Write-Host "****************************************************************"
     }
+    Write-Host "Restart Sitecore"
     Write-Host "****************************************************************"
     Write-Host "****************************************************************"
 }

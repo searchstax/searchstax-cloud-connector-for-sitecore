@@ -1,6 +1,6 @@
 settings:
-  accountName: "SilverQAAccount"
-  deploymentUid: "ss219878"
+  accountName: "Example"
+  deploymentUid: "ss123456"
   sitecorePrefix: "sitecore"
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
