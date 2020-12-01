@@ -1,13 +1,14 @@
 settings:
-  accountName: "Example"
-  deploymentUid: "ss123456"
+  accountName: "SilverQAAccount"
+  deploymentUid: "ss219878"
   sitecorePrefix: "sitecore"
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
   solrPassword: ""
   sitecoreVersion : "10.0.0"               # Supported versions - 9.0.2, 9.1.1, 9.2.0 and 9.3.0
   isUniqueConfigs: "true"                 # [true/false] 
-  configurationMode: "XP|XCONNECT"         # ["XP" "XCONNECT" "COMMERCE" "XP|XCONNECT|COMMERCE"]
+  configurationMode: "XP|XCONNECT|COMMERCE"         # ["XP" "XCONNECT" "COMMERCE" "XP|XCONNECT|COMMERCE"]
+  isAzurePaaS: "true"
   Commerce:
     CommerceServicesPostfix: "Sc9"
     isXCSwitchOnRebuild: "false"
