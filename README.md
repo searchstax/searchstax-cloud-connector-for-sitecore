@@ -52,6 +52,7 @@ It contains following fields:
 |sitecoreVersion| Version of sitecore from the above list| 9.1.1|
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
 |configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT", "COMMERCE" | XP\|XCONNECT|
+|isAzurePaaS| "True" will only configure Solr. "False" will configure both Solr and On-Premise Sitecore | true/false|
 |CommerceServicesPostfix| Suffix used for Sitecore Commerce installation. This is defined in Sitecore XC installation script.|"Sc9"|
 |isXCSwitchOnRebuild| Whether Sitecore commerce has been configured to use Switch On Rebuild feature. (v9.3.0 and above)| true/false|
 
