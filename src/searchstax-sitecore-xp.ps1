@@ -5,7 +5,6 @@ function Upload-Config($solrVersion, $token) {
 
         $configList = Invoke-RestMethod -Method Get -Headers $headers -uri $configUploadUrl
 
-        Write-Host $configList.configs
         $solrConfigPath = -join($xpConfigPath,$solrVersion,'.zip')
 
         if ($isUniqueConfigs) {
