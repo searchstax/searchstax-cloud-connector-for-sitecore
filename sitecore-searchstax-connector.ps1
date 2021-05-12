@@ -41,6 +41,7 @@ function Init {
     $configurationModeArray=$configurationMode.split("|")
     $global:isConfigureXP=$false
     $global:isConfigureXConnect=$false
+    $global:isConfigureCommerce=$false
     foreach($instMode in $configurationModeArray){
         if($instMode.ToUpper() -eq "XP"){
             $global:isConfigureXP=$true

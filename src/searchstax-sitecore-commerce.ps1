@@ -181,7 +181,5 @@ function Update-Commerce-Configs ($solr) {
             }
             $dataOfPolicyJson | ConvertTo-Json -depth 100 | Out-File $path
         }        
-    }
-
-    
+    }    
 }
