@@ -41,6 +41,7 @@ function Init {
     $configurationModeArray=$configurationMode.split("|")
     $global:isConfigureXP=$false
     $global:isConfigureXConnect=$false
+    $global:isConfigureCommerce=$false
     foreach($instMode in $configurationModeArray){
         if($instMode.ToUpper() -eq "XP"){
             $global:isConfigureXP=$true
@@ -192,9 +193,12 @@ if ($sitecoreVersion -eq "9.0.2") {
 } Elseif ($sitecoreVersion -eq "10.0.0") {
     $solrVersion = "8.4.0"
     $global:coll = $collections93
+} Elseif ($sitecoreVersion -eq "10.1.0") {
+    $solrVersion = "8.4.0"
+    $global:coll = $collections93
 }
  else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, and 10.0.0" -ErrorAction Stop
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.0, and 10.1.0" -ErrorAction Stop
 }
 
 

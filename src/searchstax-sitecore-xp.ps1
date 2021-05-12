@@ -3,12 +3,18 @@ function Upload-Config($solrVersion, $token) {
         $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
         $headers.Add("Authorization", "Token $token")
 
+        $configList = Invoke-RestMethod -Method Get -Headers $headers -uri $configUploadUrl
+
         $solrConfigPath = -join($xpConfigPath,$solrVersion,'.zip')
 
         if ($isUniqueConfigs) {
             foreach($collection in $coll){
                 $confName = -join('',$sitecorePrefix,$collection)
                 Write-Host $confName
+                if($configList.configs -contains $confName) {
+                    Write-Host "$confName exists already. Skipping."
+                    continue
+                }
                 $form = @{
                     name = $confName
                     files = Get-Item -Path $solrConfigPath
@@ -20,6 +26,10 @@ function Upload-Config($solrVersion, $token) {
             $form = @{
                 name = "sitecore_$sitecorePrefix"
                 files = Get-Item -Path $solrConfigPath
+            }
+            if($configList.configs -contains "sitecore_$sitecorePrefix") {
+                Write-Host "sitecore_$sitecorePrefix exists already. Skipping."
+                continue
             }
             Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
         }
@@ -130,6 +140,9 @@ function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
         Update-WebConfig
         Update-ConnectionStringsConfig $solr
     } Elseif ($sitecoreVersion -eq "10.0.0") {
+        Update-WebConfig
+        Update-ConnectionStringsConfig $solr
+    } Elseif ($sitecoreVersion -eq "10.1.0") {
         Update-WebConfig
         Update-ConnectionStringsConfig $solr
     }
