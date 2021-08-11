@@ -9,7 +9,7 @@ settings:
   isUniqueConfigs: "true"                 # [true/false] 
   configurationMode: "XP"                 # ["XP" "XCONNECT" "COMMERCE" "XP|XCONNECT|COMMERCE"]
   isAzurePaaS: "true"
-  isSxa: "true"                           # Generates two additional search indexes for SXA
+  isSxa: "false"                           # Generates two additional search indexes for SXA
   Commerce:
     CommerceServicesPostfix: "Sc9"
     isXCSwitchOnRebuild: "false"
