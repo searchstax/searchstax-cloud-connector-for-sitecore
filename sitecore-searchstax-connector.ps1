@@ -5,9 +5,11 @@ $xpConfigPath=".\Configs\xp\solr_config-"
 $xConnectConfigPath=".\Configs\xconnect\xconnect-config-"
 $commerceConfigPath=".\Configs\commerce\v"
 $start_time = Get-Date
-$collections = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
-$collections93 = @("_master_index","_core_index","_web_index","_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
+$collectionsXM = @("_master_index","_core_index","_web_index")
+$collections = $collectionsXM + @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
+$collections93 = $collectionsXM + @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
 $collectionsXConnect = @("xdb_internal", "xdb_rebuild_internal")
+$collectionsSXA = @("sitecore_sxa_master_index", "sitecore_sxa_web_index")
 $searchstaxUrl = 'https://app.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE
@@ -35,15 +37,20 @@ function Init {
     $global:sitecoreVersion=$yaml.settings.sitecoreVersion
     $global:isUniqueConfigs=Get-BooleanValue $yaml.settings.isUniqueConfigs
     $global:isAzurePaaS=Get-BooleanValue $yaml.settings.isAzurePaaS
+    $global:isSxa=Get-BooleanValue $yaml.settings.isSxa
 
     # Get configuration mode
     $global:configurationMode=$yaml.settings.configurationMode
     $configurationModeArray=$configurationMode.split("|")
+	$global:isConfigureXM=$false
     $global:isConfigureXP=$false
     $global:isConfigureXConnect=$false
     $global:isConfigureCommerce=$false
     foreach($instMode in $configurationModeArray){
-        if($instMode.ToUpper() -eq "XP"){
+        if($instMode.ToUpper() -eq "XM"){
+			$global:isConfigureXM = $true
+			break
+		} Elseif($instMode.ToUpper() -eq "XP"){
             $global:isConfigureXP=$true
         } Elseif ($instMode.ToUpper() -eq "XCONNECT") {
             $global:isConfigureXConnect=$true
@@ -53,7 +60,7 @@ function Init {
             Write-Error -Message "Invalid Configuration mode" -ErrorAction Stop
         }
     }
-    if (-Not $isConfigureXP -And -Not $isConfigureXConnect -And -Not $isConfigureCommerce){
+    if (-Not $isConfigureXM -And -Not $isConfigureXP -And -Not $isConfigureXConnect -And -Not $isConfigureCommerce){
         Write-Error -Message "Please select at least 1 Configuration mode" -ErrorAction Stop
     }
 
@@ -174,6 +181,7 @@ Init
 . "src\searchstax-sitecore-xp.ps1"
 . "src\searchstax-sitecore-xconnect.ps1"
 . "src\searchstax-sitecore-commerce.ps1"
+. "src\searchstax-sitecore-sxa.ps1"
 
 # Initializing Script Ends
 
@@ -196,9 +204,20 @@ if ($sitecoreVersion -eq "9.0.2") {
 } Elseif ($sitecoreVersion -eq "10.1.0") {
     $solrVersion = "8.4.0"
     $global:coll = $collections93
+} Elseif ($sitecoreVersion -eq "10.1.1") {
+    $solrVersion = "8.4.0"
+    $global:coll = $collections93
 }
  else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.0, and 10.1.0" -ErrorAction Stop
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.0, 10.1.0, 10.1.1" -ErrorAction Stop
+}
+
+if ($global:isConfigureXM -eq "true") {
+	$global:coll += $collectionsXM
+}
+
+if ($global:isSxa -eq "true") {
+    $global:sxaColl = $collectionsSXA
 }
 
 
@@ -214,12 +233,17 @@ Write-Host "Getting live node count ... DONE"
 Write-Host "Number of nodes - $nodeCount"
 $solr = Get-SolrUrl $token
 
-if ($isConfigureXP){
+if ($isConfigureXM -Or $isConfigureXP){
     Upload-Config $solrVersion $token
     Create-Collections $solr $nodeCount
     if(-Not $isAzurePaaS){
         Update-SitecoreConfigs $sitecoreVersion $solr
     }    
+}
+
+if ($global:isSxa -eq "true") {
+    Upload-SXA-Config $solrVersion $token
+    Create-SXA-Collections $solr $nodeCount
 }
 
 if ($isConfigureXConnect){
