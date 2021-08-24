@@ -92,6 +92,15 @@ function Update-EnableSearchProvider {
     Update-XML $path $xpath $attributeKey $attributeValue
 }
 
+function Update-DisplayShortStatisticFlag {
+    "Updating Sitecore.ContentSearch.config"
+    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.config")
+    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.IndexingManager.DisplayShortStatistic']"
+    $attributeKey = "value"
+    $attributeValue = "true"
+    Update-XML $path $xpath $attributeKey $attributeValue
+}
+
 function Update-MaxNumberOfSearchResults {
     "Updating Sitecore.ContentSearch.config"
     $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.config")
@@ -141,12 +150,15 @@ function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
         Update-ConnectionStringsConfig $solr
     } Elseif ($sitecoreVersion -eq "10.0.0") {
         Update-WebConfig
+        Update-DisplayShortStatisticFlag 
         Update-ConnectionStringsConfig $solr
     } Elseif ($sitecoreVersion -eq "10.1.0") {
         Update-WebConfig
+        Update-DisplayShortStatisticFlag 
         Update-ConnectionStringsConfig $solr
     } Elseif ($sitecoreVersion -eq "10.1.1") {
         Update-WebConfig
+        Update-DisplayShortStatisticFlag 
         Update-ConnectionStringsConfig $solr
     }
 
