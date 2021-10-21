@@ -5,7 +5,7 @@ settings:
   pathToWWWRoot: "C:\\inetpub\\wwwroot"
   solrUsername: ""
   solrPassword: ""
-  sitecoreVersion : "10.1.1"              # Supported versions - 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.0, 10.1.0, 10.1.1
+  sitecoreVersion : "10.2"              # Supported versions - 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.0, 10.1.0, 10.1.1, 10.2
   isUniqueConfigs: "true"                 # [true/false] 
   configurationMode: "XP"                 # ["XP" "XCONNECT" "COMMERCE" "XP|XCONNECT|COMMERCE"]
   isAzurePaaS: "true"
