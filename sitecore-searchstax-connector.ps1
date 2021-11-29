@@ -207,9 +207,12 @@ if ($sitecoreVersion -eq "9.0.2") {
 } Elseif ($sitecoreVersion -eq "10.1.1") {
     $solrVersion = "8.4.0"
     $global:coll = $collections93
+} Elseif ($sitecoreVersion -eq "10.2") {
+    $solrVersion = "8.4.0"
+    $global:coll = $collections93
 }
  else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.0, 10.1.0, 10.1.1" -ErrorAction Stop
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.0, 10.1.0, 10.1.1, 10.2" -ErrorAction Stop
 }
 
 if ($global:isConfigureXM -eq "true") {

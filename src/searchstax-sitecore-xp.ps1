@@ -160,6 +160,9 @@ function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
         Update-WebConfig
         Update-DisplayShortStatisticFlag 
         Update-ConnectionStringsConfig $solr
-    }
-
+    } Elseif ($sitecoreVersion -eq "10.2") {
+        Update-WebConfig
+        Update-DisplayShortStatisticFlag 
+        Update-ConnectionStringsConfig $solr
+    }    
 }
