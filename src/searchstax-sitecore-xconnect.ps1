@@ -50,7 +50,7 @@ function Create-XConnect-Alias($solr, $nodeCount) {
 
     foreach($collection in $collectionsXConnect){
         $collection | Write-Host
-        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$xConnectCollectionAlias[$collection],"&collections=",$collection)
+        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,"_",$xConnectCollectionAlias[$collection],"&collections=",$collection)
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
