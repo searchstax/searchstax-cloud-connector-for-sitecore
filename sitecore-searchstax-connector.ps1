@@ -208,7 +208,7 @@ if ($sitecoreVersion -eq "9.0.2") {
     $solrVersion = "8.4.0"
     $global:coll = $collections93
 } Elseif ($sitecoreVersion -eq "10.2.0") {
-    $solrVersion = "8.4.0"
+    $solrVersion = "8.8.2"
     $global:coll = $collections93
 }
  else {
