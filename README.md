@@ -74,6 +74,18 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 5. Go to your sitecore page > Control Panel > Populate Solr Managed Schema > Select All > Populate
 6. On the same page, Indexing Manager > Select All > Rebuild
 
+### PaaS/Scaled Instructions
+# Best Practice/Recommendation:
+Apply these changes via your CI/CD pipeline using secure environmentally unique tokens/variables
+Every Sitecore Web Instance (CD/CM) needs:
+1. Web.config - <AppSettings> - <add key="search:define" value="Solr"/> - set to Solr
+2. App_Config/ConnectionStrings.config <add name="solr.search" change the value of connectionString.
+
+Every XConnect Instance needs:
+1. App_Config/ConnectionStrings.config - <add name="solrCore" change the value of connectionString.
+2. App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config - <add name="solrCore" change the value of connectionString.
+3. Use the Schema API and upload App_Data\solrcommands\schema.json to both XDB Collections - reference: https://lucene.apache.org/solr/guide/8_6/schema-api.html
+
 ## How can I get help with SearchStax Sitecore Plugin?
 
 You can use GitHub to submit [bug reports](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=bug_report.md) or [feature requests](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=feature_request.md) for SearchStax-Sitecore-Plugin. Please do not submit usage questions via GitHub.
