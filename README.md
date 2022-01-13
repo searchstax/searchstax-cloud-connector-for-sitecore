@@ -75,16 +75,16 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 6. On the same page, Indexing Manager > Select All > Rebuild
 
 ### Best Practice/Recommendation:
-Configuration/ConnectionString changes should be appied during your CI/CD pipeline deployment using secure environment unique tokens/variables
+Use your CI/CD deployment to set Configuration and ConnectionString values using secure environment unique tokens/variables.
 
 ### Instructions for PaaS/Scaled/Custom Environments
 Every Sitecore Web Instance (CD/CM) needs:
-1. Web.config - <AppSettings> - <add key="search:define" value="Solr"/> - set to Solr
-2. App_Config/ConnectionStrings.config <add name="solr.search" change the value of connectionString.
+1. Web.config: ```<AppSettings> - <add key="search:define" value="Solr"/> - set to Solr```
+2. App_Config/ConnectionStrings.config: ```<add name="solr.search" change the value of connectionString.```
 
 Every XConnect Instance needs:
-1. App_Config/ConnectionStrings.config - <add name="solrCore" change the value of connectionString.
-2. App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config - <add name="solrCore" change the value of connectionString.
+1. App_Config/ConnectionStrings.config: ```<add name="solrCore" change the value of connectionString.```
+2. App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config: ```<add name="solrCore" change the value of connectionString.```
 3. Use the Schema API and upload App_Data\solrcommands\schema.json to both XDB Collections - reference: https://lucene.apache.org/solr/guide/8_6/schema-api.html
 
 ## How can I get help with SearchStax Sitecore Plugin?
