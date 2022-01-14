@@ -66,7 +66,7 @@ It contains following fields:
 
 ### Instructions
 1. Configure the `config.yml` file.
-2. Start Powershell Core v6 as Administrator.
+2. Start Powershell v6 as Administrator.
 3. Change the execution policy to skip checking.
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
