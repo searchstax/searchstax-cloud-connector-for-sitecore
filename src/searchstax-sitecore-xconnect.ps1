@@ -28,7 +28,7 @@ function Create-XConnect-Collections($solr, $nodeCount) {
 
     foreach($collection in $collectionsXConnect){
         $collection | Write-Host
-        $url = -join($solr, "admin/collections?action=CREATE&name=",$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,"_xdb")
+        $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,"_",$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,"_xdb")
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
