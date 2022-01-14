@@ -198,13 +198,13 @@ if ($sitecoreVersion -eq "9.0.2") {
 } elseif ($sitecoreVersion -eq "9.3.0") {
     $solrVersion = "8.1.1"
     $global:coll = $collections93
-} elseif ($sitecoreVersion -eq "10.0.*") {
+} elseif ($sitecoreVersion -like "10.0.*") {
     $solrVersion = "8.4.0"
     $global:coll = $collections93
 } elseif ($sitecoreVersion -like "10.1.*") {
     $solrVersion = "8.4.0"
     $global:coll = $collections93
-} elseif ($sitecoreVersion -eq "10.2.*") {
+} elseif ($sitecoreVersion -like "10.2.*") {
     $solrVersion = "8.8.2"
     $global:coll = $collections93
 }

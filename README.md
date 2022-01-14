@@ -13,8 +13,12 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 9.2 Initial Update (9.2.0)
 - 9.3 Initial Update (9.3.0)
 - 10.0 Initial Update (10.0.0)
+- 10.0 Update-1 (10.0.1)
+- 10.0 Update-2 (10.0.2)
+- 10.0 Update-3 (10.0.3)
 - 10.1 Initial Update (10.1.0)
 - 10.1 Update-1 (10.1.1)
+- 10.1 Update-2 (10.1.2)
 - 10.2 Initial Update (10.2.0)
 
 Sitecore Commerce:
@@ -22,12 +26,12 @@ Sitecore Commerce:
 - 9.3 Initial Update (9.3.0)
 
 ## Requirements
-- Powershell Core v6 or above
+- Powershell v6 or above
 - Powershell-yaml  module
 
 ### Installing
-#### Powershell Core v6
-Powershell Core v6 can be installed by running following command via Powershell Windows.
+#### Powershell v6
+Powershell v6 can be installed by running following command via Powershell Windows.
 ```powershell
 iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI"
 ```
@@ -85,7 +89,9 @@ Every Sitecore Web Instance (CD/CM) needs these updates:
 Every XConnect Instance needs these updates:
 1. App_Config/ConnectionStrings.config: ```<add name="solrCore" connectionString=```
 2. App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config: ```<add name="solrCore" connectionString=```
-3. Use the Schema API and upload App_Data\solrcommands\schema.json to both XDB Collections - reference: https://lucene.apache.org/solr/guide/8_6/schema-api.html
+3. Use the SearchStax API and upload the Schema - App_Data\solrcommands\schema.json to both XDB Collections```
+PS> Invoke-RestMethod -Uri $url -Credential $credential -ContentType 'application/json' -Method POST -Body $json
+``` - reference: https://lucene.apache.org/solr/guide/8_6/schema-api.html
 
 ## How can I get help with SearchStax Sitecore Plugin?
 
