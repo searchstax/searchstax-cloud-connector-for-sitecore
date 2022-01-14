@@ -89,11 +89,7 @@ Every Sitecore Web Instance (CD/CM) needs these updates:
 Every XConnect Instance needs these updates:
 1. App_Config/ConnectionStrings.config: ```<add name="solrCore" connectionString=```
 2. App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config: ```<add name="solrCore" connectionString=```
-3. Use the SearchStax API and upload the Schema - App_Data\solrcommands\schema.json to both XDB Collections
-```
-PS> Invoke-RestMethod -Uri $url -Credential $credential -ContentType 'application/json' -Method POST -Body $json
-```
-- reference: https://lucene.apache.org/solr/guide/8_6/schema-api.html
+3. Use the SearchStax API and upload the Schema - App_Data\solrcommands\schema.json to both XDB Collections. - reference: https://lucene.apache.org/solr/guide/8_6/schema-api.html
 
 ## How can I get help with SearchStax Sitecore Plugin?
 
