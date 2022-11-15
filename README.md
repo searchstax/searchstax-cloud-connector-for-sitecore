@@ -42,6 +42,8 @@ Install-Module powershell-yaml
 ```
 
 ## Running the script
+***The script currently does not handle Two-Factor Authentication. If you have TFA enabled in SearchStax, please disable it first to use the script. Since the script needs to run only once during setup, you can enable back the TFA once the setup is done***
+
 In order to run the script, first you have to update the config file
 ### Config File
 Config file is located at `.\config.yml`  
