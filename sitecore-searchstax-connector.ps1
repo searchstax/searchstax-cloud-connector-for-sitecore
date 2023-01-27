@@ -109,6 +109,15 @@ function Get-Token {
     $body = $body | ConvertTo-Json
     try {
         $token = Invoke-RestMethod -uri "https://app.searchstax.com/api/rest/v2/obtain-auth-token/" -Method Post -Body $body -ContentType 'application/json' 
+        if ($token.tfa_token_required) {
+            $tfa_token = Read-Host -Prompt '2FA Token - '
+            $body = @{
+                username=$uname
+                password=$password
+                tfa_token=$tfa_token
+            }
+            $token = Invoke-RestMethod -uri "https://app.searchstax.com/api/rest/v2/obtain-auth-token/" -Method Post -Body $body -ContentType 'application/json' 
+        }
         $token = $token.token
         Remove-Variable body
 
@@ -207,9 +216,12 @@ if ($sitecoreVersion -eq "9.0.2") {
 } elseif ($sitecoreVersion -like "10.2.*") {
     $solrVersion = "8.8.2"
     $global:coll = $collections93
+} elseif ($sitecoreVersion -like "10.3.*") {
+    $solrVersion = "8.11.2"
+    $global:coll = $collections93
 }
  else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*" -ErrorAction Stop
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*" -ErrorAction Stop
 }
 
 if ($global:isConfigureXM -eq "true") {
