@@ -104,21 +104,13 @@ function Get-Token {
         username=$uname
         password=$password
     }
-    Remove-Variable PASSWORD
 
     $body = $body | ConvertTo-Json
     try {
         $token = Invoke-RestMethod -uri "https://app.searchstax.com/api/rest/v2/obtain-auth-token/" -Method Post -Body $body -ContentType 'application/json' 
-        if ($token.tfa_token_required) {
-            $tfa_token = Read-Host -Prompt '2FA Token - '
-            $body = @{
-                username=$uname
-                password=$password
-                tfa_token=$tfa_token
-            }
-            $token = Invoke-RestMethod -uri "https://app.searchstax.com/api/rest/v2/obtain-auth-token/" -Method Post -Body $body -ContentType 'application/json' 
-        }
         $token = $token.token
+
+        Remove-Variable PASSWORD
         Remove-Variable body
 
         Write-Host "Obtained token" $token
@@ -126,7 +118,29 @@ function Get-Token {
         
         return $token
     } catch {
-         Write-Error -Message "Unable to get Auth Token. Error was: $_" -ErrorAction Stop
+        if ($_.ErrorDetails.Message.Contains("tfa_token_required")) {
+            $tfa_token = Read-Host -Prompt '2FA Token - '
+            $body = @{
+                username=$uname
+                password=$password
+                tfa_token=$tfa_token
+            }
+            $body = $body | ConvertTo-Json
+            $token = Invoke-RestMethod -uri "https://app.searchstax.com/api/rest/v2/obtain-auth-token/" -Method Post -Body $body -ContentType 'application/json' 
+            $token = $token.token
+
+            Remove-Variable PASSWORD
+            Remove-Variable body
+
+            Write-Host "Obtained token" $token
+            Write-Host
+
+            return $token
+        } 
+        else {
+            Write-Error -Message "Unable to get Auth Token. Error was: $_" -ErrorAction Stop
+        }
+        
     }
 }
 
