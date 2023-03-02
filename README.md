@@ -1,4 +1,4 @@
-# SearchStax Sitecore Plugin
+# SearchStax Cloud Connector for Sitecore
 ## Introduction
 This script is used to connect a Sitcore installation to a SearchStax' Solr instance. 
 It does following: 
@@ -42,8 +42,6 @@ iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI"
 Install-Module powershell-yaml
 ```
 
-## Running the script
-***The script currently does not handle Two-Factor Authentication. If you have TFA enabled in SearchStax, please disable it first to use the script. Since the script needs to run only once during setup, you can enable back the TFA once the setup is done***
 
 In order to run the script, first you have to update the config file
 ### Config File
@@ -94,9 +92,9 @@ Every XConnect Instance needs these updates:
 2. App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config: ```<add name="solrCore" connectionString=```
 3. Use the SearchStax API and upload the Schema - App_Data\solrcommands\schema.json to both XDB Collections. - reference: https://lucene.apache.org/solr/guide/8_6/schema-api.html
 
-## How can I get help with SearchStax Sitecore Plugin?
+## How can I get help with SearchStax Cloud Connector for Sitecore?
 
-You can use GitHub to submit [bug reports](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=bug_report.md) or [feature requests](https://github.com/searchstax/searchstax-sitecore-plugin/issues/new?template=feature_request.md) for SearchStax-Sitecore-Plugin. Please do not submit usage questions via GitHub.
+You can use GitHub to submit [bug reports](https://github.com/searchstax/searchstax-cloud-connector-for-sitecore/issues/new?template=bug_report.md) or [feature requests](https://github.com/searchstax/searchstax-cloud-connector-for-sitecore/issues/new?template=feature_request.md) for Searchstax-Cloud-Connector-for-Sitecore. Please do not submit usage questions via GitHub.
 
 ## FAQ
 ### Recommended Performance Optimization Settings by Sitecore
