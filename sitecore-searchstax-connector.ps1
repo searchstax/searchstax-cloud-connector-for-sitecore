@@ -31,12 +31,10 @@ function Init {
     $global:accountName=$yaml.settings.accountName
     $global:deploymentUid=$yaml.settings.deploymentUid
     $global:sitecorePrefix=$yaml.settings.sitecorePrefix
-    $global:pathToWWWRoot=$yaml.settings.pathToWWWRoot
     $global:solrUsername=$yaml.settings.solrUsername
     $global:solrPassword=$yaml.settings.solrPassword
     $global:sitecoreVersion=$yaml.settings.sitecoreVersion
     $global:isUniqueConfigs=Get-BooleanValue $yaml.settings.isUniqueConfigs
-    $global:isAzurePaaS=Get-BooleanValue $yaml.settings.isAzurePaaS
     $global:isSxa=Get-BooleanValue $yaml.settings.isSxa
 
     # Get configuration mode
@@ -140,7 +138,6 @@ function Get-Token {
         else {
             Write-Error -Message "Unable to get Auth Token. Error was: $_" -ErrorAction Stop
         }
-        
     }
 }
 
@@ -262,9 +259,6 @@ $solr = Get-SolrUrl $token
 if ($isConfigureXM -Or $isConfigureXP){
     Upload-Config $solrVersion $token
     Create-Collections $solr $nodeCount
-    if(-Not $isAzurePaaS){
-        Update-SitecoreConfigs $sitecoreVersion $solr
-    }    
 }
 
 if ($global:isSxa -eq "true") {
@@ -282,102 +276,77 @@ if ($isConfigureXConnect){
     }
 }
 
-if ($isConfigureCommerce){
-    if(-Not $isAzurePaaS){
-        Write-Host "Setting up Commerce"
-        Get-Dictionary-For-Collections
-        Upload-Commerce-Config $solrVersion $token
-        Create-Commerce-Collections $solr $nodeCount
-        Update-Commerce-Configs $solr
-    } else {
-        Write-Host "****************************************************************"
-        Write-Host "Commerce setup for Azure PaaS is currently not supported"
-        Write-Host "****************************************************************"
+Write-Host "****************************************************************"
+Write-Host "****************************************************************"
+Write-Host "****************************************************************"
+Write-Host "Solr has been set up"
+Write-Host
+Write-Host "Please follow these instructions to complete the "
+Write-Host "SearchStax - Sitecore integration:"
+Write-Host ""
+
+if ($isConfigureXP){
+    $solrConn = $solr.substring(0,$solr.length-1)
+    if ($solrUsername.length -gt 0) {
+        $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
     }
-    
-}
-
-if($isAzurePaaS){ 
-
+    $solrConn = -join($solrConn,";solrCloud=true")
     Write-Host "****************************************************************"
-    Write-Host "****************************************************************"
-    Write-Host "****************************************************************"
-    Write-Host "Solr has been set up"
+    Write-Host "Update web.config file:"
+    Write-Host "1. Navigate to your Sitecore installation"
+    Write-Host "2. Open web.config"
+    Write-Host "3. Locate the <AppSettings> section and change the value"
+    Write-Host "   of the search:define setting to Solr"
     Write-Host
-    Write-Host "Please follow these instructions to complete the "
-    Write-Host "SearchStax - Sitecore integration:"
-    Write-Host ""
-
-    if ($isConfigureXP){
-        $solrConn = $solr.substring(0,$solr.length-1)
-        if ($solrUsername.length -gt 0) {
-            $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
-        }
-        $solrConn = -join($solrConn,";solrCloud=true")
-        Write-Host "****************************************************************"
-        Write-Host "Update web.config file:"
-        Write-Host "1. Navigate to your Sitecore installation"
-        Write-Host "2. Open web.config"
-        Write-Host "3. Locate the <AppSettings> section and change the value"
-        Write-Host "   of the search:define setting to Solr"
-        Write-Host
-        Write-Host "    <AppSettings>"
-        Write-Host "        <add key=`"role:define`" value=`"ContentDelivery`"/>"
-        Write-Host "        <add key=`"search:define`" value=`"Solr`"/>"
-        Write-Host "    </AppSettings>"
-        Write-Host
-        Write-Host "****************************************************************"
-        Write-Host "Configuring the Solr endpoint:"
-        Write-Host "1. Navigate to App_Config/ConnectionStrings.config"
-        Write-Host "2. Locate <add> tag with an attribute `"solr.search`" "
-        Write-Host "    and change the value of connectionString."
-        Write-Host
-        Write-Host "<add name=`"solr.search`" connectionString=`"$solrConn`"/>"
-        Write-Host
-        Write-Host "****************************************************************"
-    }
-
-    if ($isConfigureXConnect){
-        $solrConn = $solr.substring(0,$solr.length-1)
-        if ($solrUsername.length -gt 0) {
-            $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
-        }
-        $solrConn = -join($solrConn,"/xdb;solrcloud=true")
-        Write-Host "****************************************************************"
-        Write-Host "Update the connection string for xConnect:"
-        Write-Host "1. Navigate to App_Config/ConnectionStrings.config for xConnect"
-        Write-Host "2. Locate <add> tag with an attribute `"solrCore`" "
-        Write-Host "    and change the value of connectionString."
-        Write-Host
-        Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
-        Write-Host
-        Write-Host "3. Navigate to App_Data\jobs\continuous\IndexWorker\"
-        Write-Host "    App_Config\ConnectionStrings.config for xConnect"
-        Write-Host "4. Locate <add> tag with an attribute `"solrCore`" "
-        Write-Host "    and change the value of connectionString."
-        Write-Host
-        Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
-        Write-Host
-        Write-Host "****************************************************************"
-        Write-Host "Update xConnect Schema:"
-        Write-Host "1. Navigate to App_Data\solrcommands\schema.json"
-        Write-Host "2. Use the Schema API and upload the above file to "
-        Write-Host "    both XDB Collections"
-        Write-Host "    https://lucene.apache.org/solr/guide/8_6/schema-api.html"
-        Write-Host
-        Write-Host "****************************************************************"
-    }
-    Write-Host "Restart Sitecore"
+    Write-Host "    <AppSettings>"
+    Write-Host "        <add key=`"role:define`" value=`"ContentDelivery`"/>"
+    Write-Host "        <add key=`"search:define`" value=`"Solr`"/>"
+    Write-Host "    </AppSettings>"
+    Write-Host
     Write-Host "****************************************************************"
+    Write-Host "Configuring the Solr endpoint:"
+    Write-Host "1. Navigate to App_Config/ConnectionStrings.config"
+    Write-Host "2. Locate <add> tag with an attribute `"solr.search`" "
+    Write-Host "    and change the value of connectionString."
+    Write-Host
+    Write-Host "<add name=`"solr.search`" connectionString=`"$solrConn`"/>"
+    Write-Host
     Write-Host "****************************************************************"
 }
 
-if(-Not $isAzurePaaS){
-    Write-Host "Restarting IIS"
-    Write-Host "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
-    Write-Host "Please either disable UAC, or restart IIS manually if the error occurs."
-    & {iisreset}
+if ($isConfigureXConnect){
+    $solrConn = $solr.substring(0,$solr.length-1)
+    if ($solrUsername.length -gt 0) {
+        $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
+    }
+    $solrConn = -join($solrConn,"/xdb;solrcloud=true")
+    Write-Host "****************************************************************"
+    Write-Host "Update the connection string for xConnect:"
+    Write-Host "1. Navigate to App_Config/ConnectionStrings.config for xConnect"
+    Write-Host "2. Locate <add> tag with an attribute `"solrCore`" "
+    Write-Host "    and change the value of connectionString."
+    Write-Host
+    Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
+    Write-Host
+    Write-Host "3. Navigate to App_Data\jobs\continuous\IndexWorker\"
+    Write-Host "    App_Config\ConnectionStrings.config for xConnect"
+    Write-Host "4. Locate <add> tag with an attribute `"solrCore`" "
+    Write-Host "    and change the value of connectionString."
+    Write-Host
+    Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
+    Write-Host
+    Write-Host "****************************************************************"
+    Write-Host "Update xConnect Schema:"
+    Write-Host "1. Navigate to App_Data\solrcommands\schema.json"
+    Write-Host "2. Use the Schema API and upload the above file to "
+    Write-Host "    both XDB Collections"
+    Write-Host "    https://lucene.apache.org/solr/guide/8_6/schema-api.html"
+    Write-Host
+    Write-Host "****************************************************************"
 }
+Write-Host "Restart Sitecore"
+Write-Host "****************************************************************"
+Write-Host "****************************************************************"
 
 Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
 Write-Host "FINISHED"

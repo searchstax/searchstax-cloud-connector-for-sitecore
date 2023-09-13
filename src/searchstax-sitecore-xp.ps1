@@ -36,7 +36,7 @@ function Upload-Config($solrVersion, $token) {
 
     } catch {
         Write-Error -Message "Unable to upload config file. Error was: $_" -ErrorAction Stop
-    }    
+    }
 }
 
 #TODO : Too many moving parts - Add try-catch blocks and make it fault tolerant
@@ -56,7 +56,6 @@ function Create-Collections($solr, $nodeCount) {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
         }
 
-        
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
@@ -64,75 +63,11 @@ function Create-Collections($solr, $nodeCount) {
             Invoke-WebRequest -Uri $url
             # Write-Host $url
         }
-        
     }
-}
-
-function Update-ConnectionStringsConfig ($solr) {
-    "Updating ConnectionStrings.Config file"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\ConnectionStrings.config")
-    $xpath = "//connectionStrings/add[@name='solr.search']"
-    # $solr = Get-SolrUrl $token
-    $solr = $solr.substring(0,$solr.length-1)
-    if ($solrUsername.length -gt 0) {
-        $solr = -join("https://",$solrUsername,":",$solrPassword,"@",$solr.substring(8,$solr.length-8))
-    }
-    $solr = -join($solr,";solrCloud=true")
-    $attributeKey = "connectionString"
-    $attributeValue = $solr
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-EnableSearchProvider {
-    "Updating Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Provider']"
-    $attributeKey = "value"
-    $attributeValue = "Solr"
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-DisplayShortStatisticFlag {
-    "Updating Sitecore.ContentSearch.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.IndexingManager.DisplayShortStatistic']"
-    $attributeKey = "value"
-    $attributeValue = "true"
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-MaxNumberOfSearchResults {
-    "Updating Sitecore.ContentSearch.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.SearchMaxResults']"
-    $attributeKey = "value"
-    $attributeValue = $searchMaxResults
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-EnableBatchMode {
-    "Updating Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\App_Config\Sitecore\ContentSearch\Sitecore.ContentSearch.Solr.DefaultIndexConfiguration.config")
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Update.BatchModeEnabled']"
-    $attributeKey = "value"
-    $attributeValue = "true"
-    Update-XML $path $xpath $attributeKey $attributeValue
-    $xpath = "//configuration/sitecore/settings/setting[@name='ContentSearch.Update.BatchSize']"
-    $attributeKey = "value"
-    $attributeValue = $batchSize
-    Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-WebConfig {
-    "Updating Web.Config"
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".sc\Web.config")
-    $xpath = "//configuration/appSettings/add[@key='search:define']"
-    $attributeKey = "value"
-    $attributeValue = "Solr"
-    Update-XML $path $xpath $attributeKey $attributeValue
 }
 
 function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
+    Write-Host "4"
     if ($sitecoreVersion -eq "9.0.2") {
         Update-WebConfig
         Update-ConnectionStringsConfig $solr
@@ -165,8 +100,10 @@ function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
         Update-DisplayShortStatisticFlag 
         Update-ConnectionStringsConfig $solr
     } Elseif ($sitecoreVersion -eq "10.3.*") {
+        Write-Host "5"
         Update-WebConfig
+        Write-Host "6"
         Update-DisplayShortStatisticFlag 
         Update-ConnectionStringsConfig $solr
-    }   
+    }
 }

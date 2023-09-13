@@ -1,14 +1,3 @@
-function Get-Name-Commerce-Directories {
-    $allDirectories = Get-ChildItem -Path $pathToWWWRoot -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName
-    $directories = @()
-    foreach($item in $allDirectories){
-        if($item.FullName.contains($commerceServicesPostfix)) {
-            $directories += $item.FullName
-        }
-    }
-
-    return $directories
-}
 
 function Get-Dictionary-For-Collections {
     $commerceDirectories = Get-Name-Commerce-Directories

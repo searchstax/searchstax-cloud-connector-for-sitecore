@@ -15,7 +15,7 @@ function Upload-XConnect-Config($solrVersion, $token) {
 
     } catch {
         Write-Error -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
-    }    
+    }
 }
 
 function Create-XConnect-Collections($solr, $nodeCount) {
@@ -36,7 +36,6 @@ function Create-XConnect-Collections($solr, $nodeCount) {
             Invoke-WebRequest -Uri $url
             # Write-Host $url
         }
-        
     }
 }
 
@@ -58,7 +57,6 @@ function Create-XConnect-Alias($solr, $nodeCount) {
             Invoke-WebRequest -Uri $url
             # Write-Host $url
         }
-        
     }
 }
 
@@ -72,37 +70,4 @@ function Update-XConnectConnectionStringsConfig ($solr, $path) {
     $attributeKey = "connectionString"
     $attributeValue = -join($solr,"/xdb;solrcloud=true")
     Update-XML $path $xpath $attributeKey $attributeValue
-}
-
-function Update-XConnect-SitecoreConfigs ($solr) {
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Config\ConnectionStrings.config")
-    Update-XConnectConnectionStringsConfig $solr $path
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config")
-    Update-XConnectConnectionStringsConfig $solr $path
-}
-
-function Update-XConnect-Schema ($solr) {
-    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Data\solrcommands\schema.json")
-    $json = Get-Content -Raw -Path $path
-
-    Write-Host $solr
-    if ($solrUsername.length -gt 0){
-        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
-    }
-    "Updating XDB Schema ... "
-
-    foreach($collection in $collectionsXConnect){
-        $collection | Write-Host
-        $url = -join($solr, $collection,"/schema")
-        if ($solrUsername.length -gt 0){
-            Invoke-RestMethod -Uri $url -Credential $credential -ContentType 'application/json' -Method POST -Body $json
-        }
-        else {
-            Invoke-RestMethod -Uri $url -ContentType 'application/json' -Method POST -Body $json
-            # Write-Host $url
-            # Write-Host $json
-        }
-        
-    }
 }
