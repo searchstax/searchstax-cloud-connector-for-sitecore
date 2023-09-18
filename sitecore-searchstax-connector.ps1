@@ -3,7 +3,6 @@ Import-Module powershell-yaml
 $configPath=".\config.yml"
 $xpConfigPath=".\Configs\xp\solr_config-"
 $xConnectConfigPath=".\Configs\xconnect\xconnect-config-"
-$commerceConfigPath=".\Configs\commerce\v"
 $start_time = Get-Date
 $collectionsXM = @("_master_index","_core_index","_web_index")
 $collections = $collectionsXM + @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
@@ -43,7 +42,6 @@ function Init {
 	$global:isConfigureXM=$false
     $global:isConfigureXP=$false
     $global:isConfigureXConnect=$false
-    $global:isConfigureCommerce=$false
     foreach($instMode in $configurationModeArray){
         if($instMode.ToUpper() -eq "XM"){
 			$global:isConfigureXM = $true
@@ -52,23 +50,13 @@ function Init {
             $global:isConfigureXP=$true
         } Elseif ($instMode.ToUpper() -eq "XCONNECT") {
             $global:isConfigureXConnect=$true
-        } Elseif ($instMode.ToUpper() -eq "COMMERCE") {
-            $global:isConfigureCommerce=$true
         } else {
             Write-Error -Message "Invalid Configuration mode" -ErrorAction Stop
         }
     }
-    if (-Not $isConfigureXM -And -Not $isConfigureXP -And -Not $isConfigureXConnect -And -Not $isConfigureCommerce){
+    if (-Not $isConfigureXM -And -Not $isConfigureXP -And -Not $isConfigureXConnect){
         Write-Error -Message "Please select at least 1 Configuration mode" -ErrorAction Stop
     }
-
-    # Get Values for Commerce if Configuration mode is Commerce
-    if ($isConfigureCommerce) {
-        $global:commerceServicesPostfix = $yaml.settings.Commerce.CommerceServicesPostfix
-        $global:isXCSwitchOnRebuild = Get-BooleanValue $yaml.settings.Commerce.isXCSwitchOnRebuild
-    }
-
-
 
     # Configure internal variables
     $global:deploymentReadUrl = -join($searchstaxUrl,'/api/rest/v2/account/',$accountName,'/deployment/',$deploymentUid,'/')
@@ -200,7 +188,6 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 Init
 . "src\searchstax-sitecore-xp.ps1"
 . "src\searchstax-sitecore-xconnect.ps1"
-. "src\searchstax-sitecore-commerce.ps1"
 . "src\searchstax-sitecore-sxa.ps1"
 
 # Initializing Script Ends
@@ -344,6 +331,7 @@ if ($isConfigureXConnect){
     Write-Host
     Write-Host "****************************************************************"
 }
+
 Write-Host "Restart Sitecore"
 Write-Host "****************************************************************"
 Write-Host "****************************************************************"

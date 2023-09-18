@@ -22,10 +22,6 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 10.2 Initial Update (10.2.0)
 - 10.3 Initial Update (10.3.0)
 
-Sitecore Commerce:
-- 9.2 Initial Update (9.2.0)
-- 9.3 Initial Update (9.3.0)
-
 ## Requirements
 - Powershell v6 or above
 - Powershell-yaml  module
@@ -59,10 +55,8 @@ It contains following fields:
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 10.1.1|
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
-|configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT", "COMMERCE" | XP\|XCONNECT|
+|configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT" | XP\|XCONNECT|
 |isAzurePaaS| "True" will only configure Solr. "False" will configure both Solr and On-Premise Sitecore | true/false|
-|CommerceServicesPostfix| Suffix used for Sitecore Commerce installation. This is defined in Sitecore XC installation script.|"Sc9"|
-|isXCSwitchOnRebuild| Whether Sitecore commerce has been configured to use Switch On Rebuild feature. (v9.3.0 and above)| true/false|
 |isSxa| "True" will add two additional collections to Solr for SXA support | true/false|
 
 ### Instructions
@@ -100,8 +94,6 @@ You can use GitHub to submit [bug reports](https://github.com/searchstax/searchs
 ### Recommended Performance Optimization Settings by Sitecore
 Sitecore recommends updating some settings for performance optimization when working with Solr. You can find more details here: [Performance optimizations when using Solr](https://kb.sitecore.net/articles/671173)
 
-### Sitecore Commerce
-Currently Sitecore Commerce configuration is supported for only v9.2 - Initial Update and v9.3 - Initial Update.
 ### Sitecore SXA
 This plugin currently does not support Sitecore SXA configuration.
 ### IP Filtering
