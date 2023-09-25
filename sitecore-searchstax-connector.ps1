@@ -2,6 +2,7 @@ Import-Module powershell-yaml
 
 $configPath=".\config.yml"
 $xpConfigPath=".\Configs\xp\solr_config-"
+$xConnectConfigFolderPath=".\Configs\xconnect\"
 $xConnectConfigPath=".\Configs\xconnect\xconnect-config-"
 $start_time = Get-Date
 $collectionsXM = @("_master_index","_core_index","_web_index")
@@ -10,6 +11,7 @@ $collections93 = $collectionsXM + @("_marketingdefinitions_master","_marketingde
 $collectionsXConnect = @("xdb_internal", "xdb_rebuild_internal")
 $collectionsSXA = @("sitecore_sxa_master_index", "sitecore_sxa_web_index")
 $searchstaxUrl = 'https://app.searchstax.com'
+$searchstaxStaticUrl = 'https://static.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE
 #Max return rows from solr
@@ -101,7 +103,7 @@ function Get-Token {
 
         Write-Host "Obtained token" $token
         Write-Host
-        
+
         return $token
     } catch {
         if ($_.ErrorDetails.Message.Contains("tfa_token_required")) {
@@ -122,7 +124,7 @@ function Get-Token {
             Write-Host
 
             return $token
-        } 
+        }
         else {
             Write-Error -Message "Unable to get Auth Token. Error was: $_" -ErrorAction Stop
         }
@@ -257,10 +259,7 @@ if ($isConfigureXConnect){
     Upload-XConnect-Config $solrVersion $token
     Create-XConnect-Collections $solr $nodeCount
     Create-XConnect-Alias $solr $nodeCount
-    if(-Not $isAzurePaaS){
-        Update-XConnect-SitecoreConfigs $solr
-        Update-XConnect-Schema $solr
-    }
+    Update-XConnectSchema $solr $token $solrVersion
 }
 
 Write-Host "****************************************************************"

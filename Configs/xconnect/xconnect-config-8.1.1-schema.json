@@ -1,0 +1,132 @@
+{
+    "replace-field-type": [
+        {
+            "name": "string",
+            "class": "solr.StrField",
+            "sortMissingLast": true,
+            "docValues": false
+        }
+    ],
+
+    "replace-dynamic-field": [
+        {
+            "name": "*_s",
+            "type": "lowercase",
+            "stored": false,
+            "indexed": true,
+            "omitNorms": true
+        },
+        {
+            "name": "*_b",
+            "type": "boolean",
+            "stored": false,
+            "indexed": true,
+            "sortMissingLast": false
+        },
+        {
+            "name": "*_l",
+            "type": "plong",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_i",
+            "type": "pint",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_f",
+            "type": "pfloat",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_d",
+            "type": "pdouble",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_dt",
+            "type": "pdate",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_ss",
+            "type": "lowercase",
+            "multiValued": "true",
+            "stored": false,
+            "indexed": true,
+            "omitNorms": true
+        },
+        {
+            "name": "*_bs",
+            "type": "boolean",
+            "multiValued": "true",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_ls",
+            "type": "plongs",
+            "multiValued": "true",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_is",
+            "type": "pints",
+            "multiValued": "true",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_fs",
+            "type": "pfloats",
+            "multiValued": "true",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_ds",
+            "type": "pdoubles",
+            "multiValued": "true",
+            "stored": false,
+            "indexed": true
+        },
+        {
+            "name": "*_dts",
+            "type": "pdate",
+            "multiValued": "true",
+            "stored": false,
+            "indexed": true
+        }
+    ],
+    "delete-field": [
+        { "name": "contactid_s" },
+        { "name": "xdbtokenbytes_s" },
+        { "name": "xdbiscc_b" }
+    ],
+    "add-field": [
+        {
+            "name": "contactid_s",
+            "type": "string",
+            "indexed": true,
+            "stored": true
+        },
+        {
+            "name": "xdbtokenbytes_s",
+            "type": "string",
+            "indexed": false,
+            "stored": true
+        },
+        {
+          "name": "xdbiscc_b",
+          "type": "boolean",
+          "indexed": false,
+          "stored": true
+        }
+    ]
+}

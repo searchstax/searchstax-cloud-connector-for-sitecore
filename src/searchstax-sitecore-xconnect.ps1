@@ -49,7 +49,7 @@ function Create-XConnect-Alias($solr, $nodeCount) {
 
     foreach($collection in $collectionsXConnect){
         $collection | Write-Host
-        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,"_",$xConnectCollectionAlias[$collection],"&collections=",$collection)
+        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,"_",$xConnectCollectionAlias[$collection],"&collections=",$sitecorePrefix,"_",$collection)
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
@@ -60,8 +60,33 @@ function Create-XConnect-Alias($solr, $nodeCount) {
     }
 }
 
+function Update-XConnectSchema($solrm, $token, $solrVersion) {
+    try {
+        "Updating XDB Schemas ... "
+
+        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+        $headers.Add("Authorization", "Basic YXBwODIwLWFkbWluOktvbmFib3MhMjM=")
+
+        $body = Get-XConnectSchema $solrVersion
+
+        -join($sitecorePrefix, $collection) | Write-Host
+        $url = -join($solr, $sitecorePrefix,"_xdb_internal","/schema?wt=json")
+        $url | Write-Host
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Method Post -Uri $url -Headers $headers -Body $body -ContentType 'application/json' | Write-Host
+    } catch {
+        Write-Error -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
+    }
+}
+
+function Get-XConnectSchema($solrVersion) {
+    $schemaFilePath = -join($xConnectConfigFolderPath, "xconnect-config-", $solrVersion, "-schema.json")
+    $schemaFilePath | Write-Host
+    Get-Content $schemaFilePath -Raw
+}
+
 function Update-XConnectConnectionStringsConfig ($solr, $path) {
-    "Updating XConnect ConnectionStrings in '$path' file"    
+    "Updating XConnect ConnectionStrings in '$path' file"
     $xpath = "//connectionStrings/add[@name='solrCore']"
     $solr = $solr.substring(0,$solr.length-1)
     if ($solrUsername.length -gt 0) {
@@ -70,4 +95,36 @@ function Update-XConnectConnectionStringsConfig ($solr, $path) {
     $attributeKey = "connectionString"
     $attributeValue = -join($solr,"/xdb;solrcloud=true")
     Update-XML $path $xpath $attributeKey $attributeValue
+}
+
+function Update-XConnect-SitecoreConfigs ($solr) {
+    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Config\ConnectionStrings.config")
+    Update-XConnectConnectionStringsConfig $solr $path
+    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Data\jobs\continuous\IndexWorker\App_Config\ConnectionStrings.config")
+    Update-XConnectConnectionStringsConfig $solr $path
+}
+
+function Update-XConnect-Schema ($solr) {
+    $path = -join($pathToWWWRoot, "\", $sitecorePrefix,".xconnect\App_Data\solrcommands\schema.json")
+    $json = Get-Content -Raw -Path $path
+
+    Write-Host $solr
+    if ($solrUsername.length -gt 0){
+        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
+    }
+    "Updating XDB Schema ... "
+
+    foreach($collection in $collectionsXConnect){
+        $collection | Write-Host
+        $url = -join($solr, $collection,"/schema")
+        if ($solrUsername.length -gt 0){
+            Invoke-RestMethod -Uri $url -Credential $credential -ContentType 'application/json' -Method POST -Body $json
+        }
+        else {
+            Invoke-RestMethod -Uri $url -ContentType 'application/json' -Method POST -Body $json
+            # Write-Host $url
+            # Write-Host $json
+        }
+    }
 }
