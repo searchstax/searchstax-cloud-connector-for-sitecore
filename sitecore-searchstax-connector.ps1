@@ -19,6 +19,11 @@ $searchMaxResults="500"
 #Max items in a batch
 $batchSize="500"
 # DEFAULT VALUES AS SUGGESTED BY SITECORE - END
+$switchOnRebuildSufix = "_rebuild"
+$switchOnRebuildMainAlias = "_MainAlias"
+$switchOnRebuildAlias = "_RebuildAlias"
+$switchOnRebuildPrefix = "sitecore"
+$switchOnRebuildCollections = $collectionsXM
 
 function Init {
     [string[]]$fileContent = Get-Content $configPath
@@ -37,6 +42,7 @@ function Init {
     $global:sitecoreVersion=$yaml.settings.sitecoreVersion
     $global:isUniqueConfigs=Get-BooleanValue $yaml.settings.isUniqueConfigs
     $global:isSxa=Get-BooleanValue $yaml.settings.isSxa
+    $global:isSwitchOnRebuild=Get-BooleanValue $yaml.settings.isSwitchOnRebuild
 
     # Get configuration mode
     $global:configurationMode=$yaml.settings.configurationMode
@@ -248,7 +254,13 @@ $solr = Get-SolrUrl $token
 if ($isConfigureXM -Or $isConfigureXP){
     Upload-Config $solrVersion $token
     Create-Collections $solr $nodeCount
+
+    if ($global:isSwitchOnRebuild -eq "true") {
+        Create-SwitchOnRebuildCollections $solr $nodeCount
+        Create-SwitchOnRebuildAliases $solr
+    }
 }
+
 
 if ($global:isSxa -eq "true") {
     Upload-SXA-Config $solrVersion $token

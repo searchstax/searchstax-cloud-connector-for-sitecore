@@ -57,6 +57,7 @@ It contains following fields:
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
 |configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT" | XP\|XCONNECT|
 |isSxa| "True" will add two additional collections to Solr for SXA support | true/false|
+|isSwitchOnRebuild| "True" will add one additional collection for each created collection and its aliases to Solr for SwitchOnRebuild support | true/false|
 
 ### Instructions
 1. Configure the `config.yml` file.

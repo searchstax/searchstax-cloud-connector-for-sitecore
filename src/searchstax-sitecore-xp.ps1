@@ -1,5 +1,7 @@
 function Upload-Config($solrVersion, $token) {
     try {
+        "Uploading Configs... "
+
         $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
         $headers.Add("Authorization", "Token $token")
 
@@ -19,7 +21,6 @@ function Upload-Config($solrVersion, $token) {
                     name = $confName
                     files = Get-Item -Path $solrConfigPath
                 }
-                # Write-Host $body
                 Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
             }
         } else {
@@ -35,75 +36,106 @@ function Upload-Config($solrVersion, $token) {
         }
 
     } catch {
-        Write-Error -Message "Unable to upload config file. Error was: $_" -ErrorAction Stop
+        Write-Warning -Message "Unable to upload config file. Error was: $_" -ErrorAction Stop
     }
 }
 
-#TODO : Too many moving parts - Add try-catch blocks and make it fault tolerant
 function Create-Collections($solr, $nodeCount) {
-    Write-Host $solr
     if ($solrUsername.length -gt 0){
         $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
         $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
     }
-    "Creating Collections ... "
+    "Creating Collections... "
 
     foreach($collection in $coll){
-        $collection | Write-Host
-        if ($isUniqueConfigs) {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection)
-        } else {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$sitecorePrefix,$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
-        }
+        try {
+            if($isSwitchOnRebuild -and $switchOnRebuildCollections.Contains($collection)) {
+                $collectionName = -join($switchOnRebuildPrefix,$collection)
+            } else {
+                $collectionName = -join($sitecorePrefix,$collection)
+            }
 
+            $collectionName  | Write-Host
+            -join($solr, "admin/collections?action=CREATE&name=",$collectionName,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection) | Write-Host
+            if ($isUniqueConfigs) {
+                $url = -join($solr, "admin/collections?action=CREATE&name=",$collectionName,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection)
+            } else {
+                $url = -join($solr, "admin/collections?action=CREATE&name=",$collectionName,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
+            }
+
+            if ($solrUsername.length -gt 0){
+                Invoke-WebRequest -Uri $url -Credential $credential
+            }
+            else {
+                Invoke-WebRequest -Uri $url
+            }
+        } catch {
+            Write-Warning -Message "Unable to create collection $collectionName. Error was: $_" -ErrorAction Stop
+        }
+    }
+}
+
+function Create-SwitchOnRebuildCollections($solr, $nodeCount) {
+    if ($solrUsername.length -gt 0){
+        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
+    }
+    "Creating SwitchOnRebuild Collections... "
+
+    foreach($collection in $switchOnRebuildCollections){
+        try {
+            $collectionName = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildSufix)
+            $collectionName  | Write-Host
+            if ($isUniqueConfigs) {
+                $url = -join($solr, "admin/collections?action=CREATE&name=",$collectionName,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$sitecorePrefix,$collection)
+            } else {
+                $url = -join($solr, "admin/collections?action=CREATE&name=",$collectionName,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_$sitecorePrefix")
+            }
+
+            if ($solrUsername.length -gt 0){
+                Invoke-WebRequest -Uri $url -Credential $credential
+            }
+            else {
+                Invoke-WebRequest -Uri $url
+            }
+        } catch {
+            Write-Warning -Message "Unable to create switchOnRebuild collection $collectionName. Error was: $_" -ErrorAction Stop
+        }
+    }
+}
+
+function Create-SwitchOnRebuildAliases($solr) {
+    if ($solrUsername.length -gt 0){
+        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
+    }
+    "Creating SwitchOnRebuild Aliases ... "
+
+    foreach($collection in $switchOnRebuildCollections){
+        $rebuildCollectionName = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildSufix)
+        $rebuildCollectionName  | Write-Host
+        $rebuildCollectionAlias = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildAlias)
+        $rebuildCollectionAlias  | Write-Host
+
+        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$rebuildCollectionAlias,"&collections=",$rebuildCollectionName)
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
         else {
             Invoke-WebRequest -Uri $url
-            # Write-Host $url
         }
-    }
-}
 
-function Update-SitecoreConfigs ($sitecoreVersion, $solr) {
-    Write-Host "4"
-    if ($sitecoreVersion -eq "9.0.2") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-        Update-EnableSearchProvider
-        Update-MaxNumberOfSearchResults
-        Update-EnableBatchMode
-    } Elseif ($sitecoreVersion -eq "9.1.1") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "9.2.0") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "9.3.0") {
-        Update-WebConfig
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "10.0.0") {
-        Update-WebConfig
-        Update-DisplayShortStatisticFlag 
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "10.1.0") {
-        Update-WebConfig
-        Update-DisplayShortStatisticFlag 
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "10.1.1") {
-        Update-WebConfig
-        Update-DisplayShortStatisticFlag 
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "10.2.0") {
-        Update-WebConfig
-        Update-DisplayShortStatisticFlag 
-        Update-ConnectionStringsConfig $solr
-    } Elseif ($sitecoreVersion -eq "10.3.*") {
-        Write-Host "5"
-        Update-WebConfig
-        Write-Host "6"
-        Update-DisplayShortStatisticFlag 
-        Update-ConnectionStringsConfig $solr
+        $mainCollectionName = -join($switchOnRebuildPrefix,$collection)
+        $mainCollectionName  | Write-Host
+        $mainCollectionAlias = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildMainAlias)
+        $mainCollectionAlias  | Write-Host
+
+        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$mainCollectionAlias,"&collections=",$mainCollectionName)
+        if ($solrUsername.length -gt 0){
+            Invoke-WebRequest -Uri $url -Credential $credential
+        }
+        else {
+            Invoke-WebRequest -Uri $url
+        }
     }
 }

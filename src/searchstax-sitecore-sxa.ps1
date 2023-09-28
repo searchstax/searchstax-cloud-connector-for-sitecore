@@ -14,14 +14,12 @@ function Create-SXA-Collections($solr, $nodeCount) {
             $url = -join($solr, "admin/collections?action=CREATE&name=",$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_",$sitecorePrefix)
         }
 
-        
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
         else {
             Invoke-WebRequest -Uri $url
         }
-        
     }
 }
 
