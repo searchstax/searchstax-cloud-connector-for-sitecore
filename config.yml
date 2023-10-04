@@ -9,3 +9,16 @@ settings:
   configurationMode: "XP"                 # ["XP" "XCONNECT" "XP|XCONNECT"]
   isSxa: "false"                          # Generates two additional search indexes for SXA
   isSwitchOnRebuild: "false"               # Generates an additional search index and its alias for each Solr index
+  switchOnRebuild:
+    enableForPlatformIndexes: "true"
+    enableForMarketingIndexes: "false"
+    enableForSXA: "false"
+    sufix: "_rebuild"
+    mainAlias: "_MainAlias"
+    rebuildAlias: "_RebuildAlias"
+    sitecorePrefix:  "sitecore"
+  customIndexes:
+    # - core: "sitecore101-531"
+    #   isSwitchOnRebuild: "false"
+    # - core: "sitecore102-533"
+    #   isSwitchOnRebuild: "false"

@@ -6,8 +6,8 @@ $xConnectConfigFolderPath=".\Configs\xconnect\"
 $xConnectConfigPath=".\Configs\xconnect\xconnect-config-"
 $start_time = Get-Date
 $collectionsXM = @("_master_index","_core_index","_web_index")
-$collections = $collectionsXM + @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
-$collections93 = $collectionsXM + @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
+$collectionsMarketing = @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
+$collections93Marketing = @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
 $collectionsXConnect = @("xdb_internal", "xdb_rebuild_internal")
 $collectionsSXA = @("sitecore_sxa_master_index", "sitecore_sxa_web_index")
 $searchstaxUrl = 'https://app.searchstax.com'
@@ -19,11 +19,7 @@ $searchMaxResults="500"
 #Max items in a batch
 $batchSize="500"
 # DEFAULT VALUES AS SUGGESTED BY SITECORE - END
-$switchOnRebuildSufix = "_rebuild"
-$switchOnRebuildMainAlias = "_MainAlias"
-$switchOnRebuildAlias = "_RebuildAlias"
-$switchOnRebuildPrefix = "sitecore"
-$switchOnRebuildCollections = $collectionsXM
+
 
 function Init {
     [string[]]$fileContent = Get-Content $configPath
@@ -42,7 +38,18 @@ function Init {
     $global:sitecoreVersion=$yaml.settings.sitecoreVersion
     $global:isUniqueConfigs=Get-BooleanValue $yaml.settings.isUniqueConfigs
     $global:isSxa=Get-BooleanValue $yaml.settings.isSxa
-    $global:isSwitchOnRebuild=Get-BooleanValue $yaml.settings.isSwitchOnRebuild
+    $global:customIndexes=$yaml.settings.customIndexes
+    $global:collectionsXM = $collectionsXM
+
+    $global:switchOnRebuildSufix=$yaml.settings.switchOnRebuild.sufix
+    $global:switchOnRebuildMainAlias=$yaml.settings.switchOnRebuild.mainAlias
+    $global:switchOnRebuildAlias=$yaml.settings.switchOnRebuild.rebuildAlias
+    $global:switchOnRebuildSitecorePrefix=$yaml.settings.switchOnRebuild.sitecorePrefix
+
+    $global:switchOnRebuildEnableForPlatformIndexes=Get-BooleanValue $yaml.settings.switchOnRebuild.enableForPlatformIndexes
+    $global:switchOnRebuildEnableForMarketingIndexes=Get-BooleanValue $yaml.settings.switchOnRebuild.enableForMarketingIndexes
+    $global:switchOnRebuildEnableForSXA=Get-BooleanValue $yaml.settings.switchOnRebuild.enableForSXA
+    $global:switchOnRebuildCollections = @()
 
     # Get configuration mode
     $global:configurationMode=$yaml.settings.configurationMode
@@ -200,42 +207,54 @@ Init
 
 # Initializing Script Ends
 
-if ($sitecoreVersion -eq "9.0.2") {
-    $solrVersion = "6"
-    $global:isUniqueConfigs= $true
-    $global:coll = $collections
-} elseif ($sitecoreVersion -eq "9.1.1") {
-    $solrVersion = "7.2.1"
-    $global:coll = $collections
-} elseif ($sitecoreVersion -eq "9.2.0") {
-    $solrVersion = "7.5.0"
-    $global:coll = $collections
-} elseif ($sitecoreVersion -eq "9.3.0") {
-    $solrVersion = "8.1.1"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.0.*") {
-    $solrVersion = "8.4.0"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.1.*") {
-    $solrVersion = "8.4.0"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.2.*") {
-    $solrVersion = "8.8.2"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.3.*") {
-    $solrVersion = "8.11.2"
-    $global:coll = $collections93
-}
- else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*" -ErrorAction Stop
-}
 
 if ($global:isConfigureXM -eq "true") {
 	$global:coll += $collectionsXM
 }
+elseif($global:isConfigureXP -eq "true") {
+    if ($sitecoreVersion -eq "9.0.2") {
+        $solrVersion = "6"
+        $global:isUniqueConfigs= $true
+        $global:collectionsMarketing = $collectionsMarketing
+    } elseif ($sitecoreVersion -eq "9.1.1") {
+        $solrVersion = "7.2.1"
+        $global:collectionsMarketing = $collectionsMarketing
+    } elseif ($sitecoreVersion -eq "9.2.0") {
+        $solrVersion = "7.5.0"
+        $global:collectionsMarketing = $collectionsMarketing
+    } elseif ($sitecoreVersion -eq "9.3.0") {
+        $solrVersion = "8.1.1"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.0.*") {
+        $solrVersion = "8.4.0"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.1.*") {
+        $solrVersion = "8.4.0"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.2.*") {
+        $solrVersion = "8.8.2"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.3.*") {
+        $solrVersion = "8.11.2"
+        $global:collectionsMarketing = $collections93Marketing
+    }
+     else {
+        Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*" -ErrorAction Stop
+    }
+
+    $global:coll = $collectionsXM + $global:collectionsMarketing
+}
 
 if ($global:isSxa -eq "true") {
     $global:sxaColl = $collectionsSXA
+}
+
+if($global:switchOnRebuildEnableForPlatformIndexes) {
+    $global:switchOnRebuildCollections += $collectionsXM
+}
+
+if($global:switchOnRebuildEnableForMarketingIndexes) {
+    $global:switchOnRebuildCollections += $global:collectionsMarketing
 }
 
 
@@ -252,15 +271,19 @@ Write-Host "Number of nodes - $nodeCount"
 $solr = Get-SolrUrl $token
 
 if ($isConfigureXM -Or $isConfigureXP){
-    Upload-Config $solrVersion $token
+    Upload-Configs $solrVersion $token
     Create-Collections $solr $nodeCount
 
-    if ($global:isSwitchOnRebuild -eq "true") {
+    if ($global:switchOnRebuildEnableForPlatformIndexes -or $global:switchOnRebuildEnableForMarketingIndexes) {
         Create-SwitchOnRebuildCollections $solr $nodeCount
         Create-SwitchOnRebuildAliases $solr
     }
 }
 
+if($global:customIndexes.Count -gt 0) {
+    Upload-CustomConfigs  $solrVersion $token
+    Create-CustomCollections $solr $nodeCount
+}
 
 if ($global:isSxa -eq "true") {
     Upload-SXA-Config $solrVersion $token
