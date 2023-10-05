@@ -8,7 +8,6 @@ settings:
   isUniqueConfigs: "true"                 # [true/false] 
   configurationMode: "XP"                 # ["XP" "XCONNECT" "XP|XCONNECT"]
   isSxa: "false"                          # Generates two additional search indexes for SXA
-  isSwitchOnRebuild: "false"               # Generates an additional search index and its alias for each Solr index
   switchOnRebuild:
     enableForPlatformIndexes: "true"
     enableForMarketingIndexes: "false"

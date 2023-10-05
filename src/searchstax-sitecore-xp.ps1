@@ -74,7 +74,22 @@ function Create-CustomCollections($solr, $nodeCount) {
 
     foreach($customIndex in $global:customIndexes){
         Write-Host "Creating Custom $customIndex collection..."
-        Create-Collection $customIndex $customIndex $solr $nodeCount
+        $customIndexName = $customIndex.core
+        Create-Collection $customIndexName $customIndexName $solr $nodeCount
+
+        if($customIndex.isSwitchOnRebuild) {
+            $customIndexRebuildCollection = -join($customIndexName,$switchOnRebuildSufix)
+            Write-Host "Creating SwitchOnRebuild $customIndexRebuildCollection collection..."
+            Create-Collection $customIndexRebuildCollection $customIndexName $solr $nodeCount
+
+            $rebuildCollectionAlias = -join($customIndexName,$switchOnRebuildAlias)
+            Write-Host "Creating $rebuildCollectionAlias alias for $customIndexRebuildCollection collection"
+            Create-SwitchOnRebuildAlias $rebuildCollectionAlias $customIndexRebuildCollection $solr
+
+            $mainCollectionAlias = -join($customIndexName,$switchOnRebuildMainAlias)
+            Write-Host "Creating $mainCollectionAlias alias for $customIndexName collection"
+            Create-SwitchOnRebuildAlias $mainCollectionAlias $customIndexName $solr
+        }
     }
 }
 
