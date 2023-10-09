@@ -1,66 +1,32 @@
-function Create-SXA-Collections($solr, $nodeCount) {
-    Write-Host $solr
-    if ($solrUsername.length -gt 0){
-        $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
-    }
-    "Creating SXA Collections ... "
+function Upload-SXA-Config($solrVersion, $token) {
+    "Uploading SXA Configs:"
 
     foreach($collection in $sxaColl){
-        $collection | Write-Host
-        if ($isUniqueConfigs) {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=",$collection)
-        } else {
-            $url = -join($solr, "admin/collections?action=CREATE&name=",$collection,"&numShards=1&replicationFactor=",$nodeCount,"&collection.configName=sitecore_",$sitecorePrefix)
-        }
-
-        if ($solrUsername.length -gt 0){
-            Invoke-WebRequest -Uri $url -Credential $credential
-        }
-        else {
-            Invoke-WebRequest -Uri $url
-        }
+        Write-Host "Uploading $collection config..."
+        Upload-Config $collection $solrVersion $token
     }
 }
 
-function Upload-SXA-Config($solrVersion, $token) {
-    try {
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Authorization", "Token $token")
+function Create-SXA-Collections($solr, $nodeCount) {
+    "Creating SXA Collections:"
 
-        $configList = Invoke-RestMethod -Method Get -Headers $headers -uri $configUploadUrl
+    foreach($collection in $sxaColl){
+        Write-Host "Creating $collection collection for SXA..."
+        Create-Collection $collection $collection $solr $nodeCount
 
-        $solrConfigPath = -join($xpConfigPath,$solrVersion,'.zip')
+        if($global:switchOnRebuildEnableForSXA) {
+            $sxaIndexRebuildCollection = -join($collection,$switchOnRebuildSufix)
+            Write-Host "Creating SwitchOnRebuild $sxaIndexRebuildCollection collection for SXA..."
+            Create-Collection $sxaIndexRebuildCollection $collection $solr $nodeCount
 
-        if ($isUniqueConfigs) {
-            foreach($collection in $sxaColl){
-                $confName = $collection
-                Write-Host $confName
-                if($configList.configs -contains $confName) {
-                    Write-Host "$confName exists already. Skipping."
-                    continue
-                }
-                $form = @{
-                    name = $confName
-                    files = Get-Item -Path $solrConfigPath
-                }
-                # Write-Host $body
-                Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
-            }
-        } else {
-            $form = @{
-                name = "sitecore_$sitecorePrefix"
-                files = Get-Item -Path $solrConfigPath
-            }
-            if($configList.configs -contains "sitecore_$sitecorePrefix") {
-                Write-Host "sitecore_$sitecorePrefix exists already. Skipping."
-                continue
-            }
-            Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
+            $rebuildCollectionAlias = -join($collection,$switchOnRebuildAlias)
+            Write-Host "Creating $rebuildCollectionAlias alias for $sxaIndexRebuildCollection collection for SXA"
+            Create-SwitchOnRebuildAlias $rebuildCollectionAlias $sxaIndexRebuildCollection $solr
+
+            $mainCollectionAlias = -join($collection,$switchOnRebuildMainAlias)
+            Write-Host "Creating $mainCollectionAlias alias for $collection collection for SXA"
+            Create-SwitchOnRebuildAlias $mainCollectionAlias $collection $solr
         }
-
-    } catch {
-        Write-Error -Message "Unable to upload config file. Error was: $_" -ErrorAction Stop
-    }    
+    }
 }
 

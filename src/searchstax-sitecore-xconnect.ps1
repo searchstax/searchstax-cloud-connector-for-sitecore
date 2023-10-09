@@ -14,7 +14,7 @@ function Upload-XConnect-Config($solrVersion, $token) {
         Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
 
     } catch {
-        Write-Error -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
+        Write-Warning -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
     }
 }
 
@@ -75,7 +75,7 @@ function Update-XConnectSchema($solrm, $token, $solrVersion) {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         Invoke-WebRequest -Method Post -Uri $url -Headers $headers -Body $body -ContentType 'application/json' | Write-Host
     } catch {
-        Write-Error -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
+        Write-Warning -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
     }
 }
 
