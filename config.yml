@@ -9,7 +9,7 @@ settings:
   configurationMode: "XP"                 # ["XP" "XCONNECT" "XP|XCONNECT"]
   isSxa: "false"                          # Generates two additional search indexes for SXA
   switchOnRebuild:
-    enableForPlatformIndexes: "true"
+    enableForPlatformIndexes: "false"
     enableForMarketingIndexes: "false"
     enableForSXA: "false"
     sufix: "_rebuild"
@@ -17,7 +17,7 @@ settings:
     rebuildAlias: "_RebuildAlias"
     sitecorePrefix:  "sitecore"
   customIndexes:
-    # - core: "sitecore101-531"
+    # - core: "sitecoreindex-123"
     #   isSwitchOnRebuild: "false"
-    # - core: "sitecore102-533"
+    # - core: "sitecoreindex-456"
     #   isSwitchOnRebuild: "false"
