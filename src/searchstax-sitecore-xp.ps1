@@ -54,7 +54,7 @@ function Create-Collections($solr, $nodeCount) {
 
     foreach($collection in $coll){
         if($global:switchOnRebuildCollections.Contains($collection)) {
-            $collectionName = -join($switchOnRebuildPrefix,$collection)
+            $collectionName = -join($switchOnRebuildSitecorePrefix,$collection)
         } else {
             $collectionName = -join($sitecorePrefix,$collection)
         }
@@ -97,7 +97,7 @@ function Create-SwitchOnRebuildCollections($solr, $nodeCount) {
     "Creating SwitchOnRebuild Collections: "
 
     foreach($collection in $global:switchOnRebuildCollections){
-        $collectionName = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildSufix)
+        $collectionName = -join($switchOnRebuildSitecorePrefix,$collection,$switchOnRebuildSufix)
         if ($isUniqueConfigs) {
             $configName = -join($sitecorePrefix,$collection)
         } else {
@@ -130,14 +130,14 @@ function Create-SwitchOnRebuildAliases($solr) {
     "Creating SwitchOnRebuild Aliases:"
 
     foreach($collection in $global:switchOnRebuildCollections){
-        $rebuildCollectionName = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildSufix)
-        $rebuildCollectionAlias = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildAlias)
+        $rebuildCollectionName = -join($switchOnRebuildSitecorePrefix,$collection,$switchOnRebuildSufix)
+        $rebuildCollectionAlias = -join($switchOnRebuildSitecorePrefix,$collection,$switchOnRebuildAlias)
 
         Write-Host "Creating $rebuildCollectionAlias alias for $rebuildCollectionName collection"
         Create-SwitchOnRebuildAlias $rebuildCollectionAlias $rebuildCollectionName $solr
 
-        $mainCollectionName = -join($switchOnRebuildPrefix,$collection)
-        $mainCollectionAlias = -join($switchOnRebuildPrefix,$collection,$switchOnRebuildMainAlias)
+        $mainCollectionName = -join($switchOnRebuildSitecorePrefix,$collection)
+        $mainCollectionAlias = -join($switchOnRebuildSitecorePrefix,$collection,$switchOnRebuildMainAlias)
 
         Write-Host "Creating $mainCollectionAlias alias for $mainCollectionName collection"
         Create-SwitchOnRebuildAlias $mainCollectionAlias $mainCollectionName $solr
