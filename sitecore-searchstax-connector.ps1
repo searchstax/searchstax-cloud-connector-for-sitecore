@@ -2,15 +2,16 @@ Import-Module powershell-yaml
 
 $configPath=".\config.yml"
 $xpConfigPath=".\Configs\xp\solr_config-"
+$xConnectConfigFolderPath=".\Configs\xconnect\"
 $xConnectConfigPath=".\Configs\xconnect\xconnect-config-"
-$commerceConfigPath=".\Configs\commerce\v"
 $start_time = Get-Date
 $collectionsXM = @("_master_index","_core_index","_web_index")
-$collections = $collectionsXM + @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
-$collections93 = $collectionsXM + @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
+$collectionsMarketing = @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index" )
+$collections93Marketing = @("_marketingdefinitions_master","_marketingdefinitions_web","_marketing_asset_index_master","_marketing_asset_index_web","_testing_index","_suggested_test_index","_fxm_master_index","_fxm_web_index","_personalization_index" )
 $collectionsXConnect = @("xdb_internal", "xdb_rebuild_internal")
 $collectionsSXA = @("sitecore_sxa_master_index", "sitecore_sxa_web_index")
 $searchstaxUrl = 'https://app.searchstax.com'
+$searchstaxStaticUrl = 'https://static.searchstax.com'
 $authUrl = -join($searchstaxUrl, '/api/rest/v1/obtain-auth-token/')
 # DEFAULT VALUES AS SUGGESTED BY SITECORE
 #Max return rows from solr
@@ -18,6 +19,7 @@ $searchMaxResults="500"
 #Max items in a batch
 $batchSize="500"
 # DEFAULT VALUES AS SUGGESTED BY SITECORE - END
+
 
 function Init {
     [string[]]$fileContent = Get-Content $configPath
@@ -31,13 +33,23 @@ function Init {
     $global:accountName=$yaml.settings.accountName
     $global:deploymentUid=$yaml.settings.deploymentUid
     $global:sitecorePrefix=$yaml.settings.sitecorePrefix
-    $global:pathToWWWRoot=$yaml.settings.pathToWWWRoot
     $global:solrUsername=$yaml.settings.solrUsername
     $global:solrPassword=$yaml.settings.solrPassword
     $global:sitecoreVersion=$yaml.settings.sitecoreVersion
     $global:isUniqueConfigs=Get-BooleanValue $yaml.settings.isUniqueConfigs
-    $global:isAzurePaaS=Get-BooleanValue $yaml.settings.isAzurePaaS
     $global:isSxa=Get-BooleanValue $yaml.settings.isSxa
+    $global:customIndexes=$yaml.settings.customIndexes
+    $global:collectionsXM = $collectionsXM
+
+    $global:switchOnRebuildSufix=$yaml.settings.switchOnRebuild.sufix
+    $global:switchOnRebuildMainAlias=$yaml.settings.switchOnRebuild.mainAlias
+    $global:switchOnRebuildAlias=$yaml.settings.switchOnRebuild.rebuildAlias
+    $global:switchOnRebuildSitecorePrefix=$yaml.settings.switchOnRebuild.sitecorePrefix
+
+    $global:switchOnRebuildEnableForPlatformIndexes=Get-BooleanValue $yaml.settings.switchOnRebuild.enableForPlatformIndexes
+    $global:switchOnRebuildEnableForMarketingIndexes=Get-BooleanValue $yaml.settings.switchOnRebuild.enableForMarketingIndexes
+    $global:switchOnRebuildEnableForSXA=Get-BooleanValue $yaml.settings.switchOnRebuild.enableForSXA
+    $global:switchOnRebuildCollections = @()
 
     # Get configuration mode
     $global:configurationMode=$yaml.settings.configurationMode
@@ -45,7 +57,6 @@ function Init {
 	$global:isConfigureXM=$false
     $global:isConfigureXP=$false
     $global:isConfigureXConnect=$false
-    $global:isConfigureCommerce=$false
     foreach($instMode in $configurationModeArray){
         if($instMode.ToUpper() -eq "XM"){
 			$global:isConfigureXM = $true
@@ -54,23 +65,13 @@ function Init {
             $global:isConfigureXP=$true
         } Elseif ($instMode.ToUpper() -eq "XCONNECT") {
             $global:isConfigureXConnect=$true
-        } Elseif ($instMode.ToUpper() -eq "COMMERCE") {
-            $global:isConfigureCommerce=$true
         } else {
             Write-Error -Message "Invalid Configuration mode" -ErrorAction Stop
         }
     }
-    if (-Not $isConfigureXM -And -Not $isConfigureXP -And -Not $isConfigureXConnect -And -Not $isConfigureCommerce){
+    if (-Not $isConfigureXM -And -Not $isConfigureXP -And -Not $isConfigureXConnect){
         Write-Error -Message "Please select at least 1 Configuration mode" -ErrorAction Stop
     }
-
-    # Get Values for Commerce if Configuration mode is Commerce
-    if ($isConfigureCommerce) {
-        $global:commerceServicesPostfix = $yaml.settings.Commerce.CommerceServicesPostfix
-        $global:isXCSwitchOnRebuild = Get-BooleanValue $yaml.settings.Commerce.isXCSwitchOnRebuild
-    }
-
-
 
     # Configure internal variables
     $global:deploymentReadUrl = -join($searchstaxUrl,'/api/rest/v2/account/',$accountName,'/deployment/',$deploymentUid,'/')
@@ -115,7 +116,7 @@ function Get-Token {
 
         Write-Host "Obtained token" $token
         Write-Host
-        
+
         return $token
     } catch {
         if ($_.ErrorDetails.Message.Contains("tfa_token_required")) {
@@ -136,11 +137,10 @@ function Get-Token {
             Write-Host
 
             return $token
-        } 
+        }
         else {
             Write-Error -Message "Unable to get Auth Token. Error was: $_" -ErrorAction Stop
         }
-        
     }
 }
 
@@ -203,47 +203,58 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 Init
 . "src\searchstax-sitecore-xp.ps1"
 . "src\searchstax-sitecore-xconnect.ps1"
-. "src\searchstax-sitecore-commerce.ps1"
 . "src\searchstax-sitecore-sxa.ps1"
 
 # Initializing Script Ends
 
-if ($sitecoreVersion -eq "9.0.2") {
-    $solrVersion = "6"
-    $global:isUniqueConfigs= $true
-    $global:coll = $collections
-} elseif ($sitecoreVersion -eq "9.1.1") {
-    $solrVersion = "7.2.1"
-    $global:coll = $collections
-} elseif ($sitecoreVersion -eq "9.2.0") {
-    $solrVersion = "7.5.0"
-    $global:coll = $collections
-} elseif ($sitecoreVersion -eq "9.3.0") {
-    $solrVersion = "8.1.1"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.0.*") {
-    $solrVersion = "8.4.0"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.1.*") {
-    $solrVersion = "8.4.0"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.2.*") {
-    $solrVersion = "8.8.2"
-    $global:coll = $collections93
-} elseif ($sitecoreVersion -like "10.3.*") {
-    $solrVersion = "8.11.2"
-    $global:coll = $collections93
-}
- else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*" -ErrorAction Stop
-}
 
 if ($global:isConfigureXM -eq "true") {
 	$global:coll += $collectionsXM
 }
+elseif($global:isConfigureXP -eq "true") {
+    if ($sitecoreVersion -eq "9.0.2") {
+        $solrVersion = "6"
+        $global:isUniqueConfigs= $true
+        $global:collectionsMarketing = $collectionsMarketing
+    } elseif ($sitecoreVersion -eq "9.1.1") {
+        $solrVersion = "7.2.1"
+        $global:collectionsMarketing = $collectionsMarketing
+    } elseif ($sitecoreVersion -eq "9.2.0") {
+        $solrVersion = "7.5.0"
+        $global:collectionsMarketing = $collectionsMarketing
+    } elseif ($sitecoreVersion -eq "9.3.0") {
+        $solrVersion = "8.1.1"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.0.*") {
+        $solrVersion = "8.4.0"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.1.*") {
+        $solrVersion = "8.4.0"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.2.*") {
+        $solrVersion = "8.8.2"
+        $global:collectionsMarketing = $collections93Marketing
+    } elseif ($sitecoreVersion -like "10.3.*") {
+        $solrVersion = "8.11.2"
+        $global:collectionsMarketing = $collections93Marketing
+    }
+     else {
+        Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*" -ErrorAction Stop
+    }
+
+    $global:coll = $collectionsXM + $global:collectionsMarketing
+}
 
 if ($global:isSxa -eq "true") {
     $global:sxaColl = $collectionsSXA
+}
+
+if($global:switchOnRebuildEnableForPlatformIndexes) {
+    $global:switchOnRebuildCollections += $collectionsXM
+}
+
+if($global:switchOnRebuildEnableForMarketingIndexes) {
+    $global:switchOnRebuildCollections += $global:collectionsMarketing
 }
 
 
@@ -260,11 +271,18 @@ Write-Host "Number of nodes - $nodeCount"
 $solr = Get-SolrUrl $token
 
 if ($isConfigureXM -Or $isConfigureXP){
-    Upload-Config $solrVersion $token
+    Upload-Configs $solrVersion $token
     Create-Collections $solr $nodeCount
-    if(-Not $isAzurePaaS){
-        Update-SitecoreConfigs $sitecoreVersion $solr
-    }    
+
+    if ($global:switchOnRebuildEnableForPlatformIndexes -or $global:switchOnRebuildEnableForMarketingIndexes) {
+        Create-SwitchOnRebuildCollections $solr $nodeCount
+        Create-SwitchOnRebuildAliases $solr
+    }
+}
+
+if($global:customIndexes.Count -gt 0) {
+    Upload-CustomConfigs  $solrVersion $token
+    Create-CustomCollections $solr $nodeCount
 }
 
 if ($global:isSxa -eq "true") {
@@ -276,108 +294,81 @@ if ($isConfigureXConnect){
     Upload-XConnect-Config $solrVersion $token
     Create-XConnect-Collections $solr $nodeCount
     Create-XConnect-Alias $solr $nodeCount
-    if(-Not $isAzurePaaS){
-        Update-XConnect-SitecoreConfigs $solr
-        Update-XConnect-Schema $solr
-    }
+    Update-XConnectSchema $solr $token $solrVersion
 }
 
-if ($isConfigureCommerce){
-    if(-Not $isAzurePaaS){
-        Write-Host "Setting up Commerce"
-        Get-Dictionary-For-Collections
-        Upload-Commerce-Config $solrVersion $token
-        Create-Commerce-Collections $solr $nodeCount
-        Update-Commerce-Configs $solr
-    } else {
-        Write-Host "****************************************************************"
-        Write-Host "Commerce setup for Azure PaaS is currently not supported"
-        Write-Host "****************************************************************"
+Write-Host "****************************************************************"
+Write-Host "****************************************************************"
+Write-Host "****************************************************************"
+Write-Host "Solr has been set up"
+Write-Host
+Write-Host "Please follow these instructions to complete the "
+Write-Host "SearchStax - Sitecore integration:"
+Write-Host ""
+
+if ($isConfigureXP){
+    $solrConn = $solr.substring(0,$solr.length-1)
+    if ($solrUsername.length -gt 0) {
+        $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
     }
-    
-}
-
-if($isAzurePaaS){ 
-
+    $solrConn = -join($solrConn,";solrCloud=true")
     Write-Host "****************************************************************"
-    Write-Host "****************************************************************"
-    Write-Host "****************************************************************"
-    Write-Host "Solr has been set up"
+    Write-Host "Update web.config file:"
+    Write-Host "1. Navigate to your Sitecore installation"
+    Write-Host "2. Open web.config"
+    Write-Host "3. Locate the <AppSettings> section and change the value"
+    Write-Host "   of the search:define setting to Solr"
     Write-Host
-    Write-Host "Please follow these instructions to complete the "
-    Write-Host "SearchStax - Sitecore integration:"
-    Write-Host ""
-
-    if ($isConfigureXP){
-        $solrConn = $solr.substring(0,$solr.length-1)
-        if ($solrUsername.length -gt 0) {
-            $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
-        }
-        $solrConn = -join($solrConn,";solrCloud=true")
-        Write-Host "****************************************************************"
-        Write-Host "Update web.config file:"
-        Write-Host "1. Navigate to your Sitecore installation"
-        Write-Host "2. Open web.config"
-        Write-Host "3. Locate the <AppSettings> section and change the value"
-        Write-Host "   of the search:define setting to Solr"
-        Write-Host
-        Write-Host "    <AppSettings>"
-        Write-Host "        <add key=`"role:define`" value=`"ContentDelivery`"/>"
-        Write-Host "        <add key=`"search:define`" value=`"Solr`"/>"
-        Write-Host "    </AppSettings>"
-        Write-Host
-        Write-Host "****************************************************************"
-        Write-Host "Configuring the Solr endpoint:"
-        Write-Host "1. Navigate to App_Config/ConnectionStrings.config"
-        Write-Host "2. Locate <add> tag with an attribute `"solr.search`" "
-        Write-Host "    and change the value of connectionString."
-        Write-Host
-        Write-Host "<add name=`"solr.search`" connectionString=`"$solrConn`"/>"
-        Write-Host
-        Write-Host "****************************************************************"
-    }
-
-    if ($isConfigureXConnect){
-        $solrConn = $solr.substring(0,$solr.length-1)
-        if ($solrUsername.length -gt 0) {
-            $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
-        }
-        $solrConn = -join($solrConn,"/xdb;solrcloud=true")
-        Write-Host "****************************************************************"
-        Write-Host "Update the connection string for xConnect:"
-        Write-Host "1. Navigate to App_Config/ConnectionStrings.config for xConnect"
-        Write-Host "2. Locate <add> tag with an attribute `"solrCore`" "
-        Write-Host "    and change the value of connectionString."
-        Write-Host
-        Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
-        Write-Host
-        Write-Host "3. Navigate to App_Data\jobs\continuous\IndexWorker\"
-        Write-Host "    App_Config\ConnectionStrings.config for xConnect"
-        Write-Host "4. Locate <add> tag with an attribute `"solrCore`" "
-        Write-Host "    and change the value of connectionString."
-        Write-Host
-        Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
-        Write-Host
-        Write-Host "****************************************************************"
-        Write-Host "Update xConnect Schema:"
-        Write-Host "1. Navigate to App_Data\solrcommands\schema.json"
-        Write-Host "2. Use the Schema API and upload the above file to "
-        Write-Host "    both XDB Collections"
-        Write-Host "    https://lucene.apache.org/solr/guide/8_6/schema-api.html"
-        Write-Host
-        Write-Host "****************************************************************"
-    }
-    Write-Host "Restart Sitecore"
+    Write-Host "    <AppSettings>"
+    Write-Host "        <add key=`"role:define`" value=`"ContentDelivery`"/>"
+    Write-Host "        <add key=`"search:define`" value=`"Solr`"/>"
+    Write-Host "    </AppSettings>"
+    Write-Host
     Write-Host "****************************************************************"
+    Write-Host "Configuring the Solr endpoint:"
+    Write-Host "1. Navigate to App_Config/ConnectionStrings.config"
+    Write-Host "2. Locate <add> tag with an attribute `"solr.search`" "
+    Write-Host "    and change the value of connectionString."
+    Write-Host
+    Write-Host "<add name=`"solr.search`" connectionString=`"$solrConn`"/>"
+    Write-Host
     Write-Host "****************************************************************"
 }
 
-if(-Not $isAzurePaaS){
-    Write-Host "Restarting IIS"
-    Write-Host "NOTE: If you have UAC enabled, then this step might fail with 'Access Denied' error."
-    Write-Host "Please either disable UAC, or restart IIS manually if the error occurs."
-    & {iisreset}
+if ($isConfigureXConnect){
+    $solrConn = $solr.substring(0,$solr.length-1)
+    if ($solrUsername.length -gt 0) {
+        $solrConn = -join("https://",$solrUsername,":",$solrPassword,"@",$solrConn.substring(8,$solrConn.length-8))
+    }
+    $solrConn = -join($solrConn,"/xdb;solrcloud=true")
+    Write-Host "****************************************************************"
+    Write-Host "Update the connection string for xConnect:"
+    Write-Host "1. Navigate to App_Config/ConnectionStrings.config for xConnect"
+    Write-Host "2. Locate <add> tag with an attribute `"solrCore`" "
+    Write-Host "    and change the value of connectionString."
+    Write-Host
+    Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
+    Write-Host
+    Write-Host "3. Navigate to App_Data\jobs\continuous\IndexWorker\"
+    Write-Host "    App_Config\ConnectionStrings.config for xConnect"
+    Write-Host "4. Locate <add> tag with an attribute `"solrCore`" "
+    Write-Host "    and change the value of connectionString."
+    Write-Host
+    Write-Host "<add name=`"solrCore`" connectionString=`"$solrConn`" />"
+    Write-Host
+    Write-Host "****************************************************************"
+    Write-Host "Update xConnect Schema:"
+    Write-Host "1. Navigate to App_Data\solrcommands\schema.json"
+    Write-Host "2. Use the Schema API and upload the above file to "
+    Write-Host "    both XDB Collections"
+    Write-Host "    https://lucene.apache.org/solr/guide/8_6/schema-api.html"
+    Write-Host
+    Write-Host "****************************************************************"
 }
+
+Write-Host "Restart Sitecore"
+Write-Host "****************************************************************"
+Write-Host "****************************************************************"
 
 Write-Output "Time taken: $((Get-Date).Subtract($start_time))"
 Write-Host "FINISHED"

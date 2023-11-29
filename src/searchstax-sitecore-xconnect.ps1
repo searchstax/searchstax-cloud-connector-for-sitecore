@@ -14,8 +14,8 @@ function Upload-XConnect-Config($solrVersion, $token) {
         Invoke-RestMethod -Method Post -Form $form -Headers $headers -uri $configUploadUrl 
 
     } catch {
-        Write-Error -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
-    }    
+        Write-Warning -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
+    }
 }
 
 function Create-XConnect-Collections($solr, $nodeCount) {
@@ -36,7 +36,6 @@ function Create-XConnect-Collections($solr, $nodeCount) {
             Invoke-WebRequest -Uri $url
             # Write-Host $url
         }
-        
     }
 }
 
@@ -50,7 +49,7 @@ function Create-XConnect-Alias($solr, $nodeCount) {
 
     foreach($collection in $collectionsXConnect){
         $collection | Write-Host
-        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,"_",$xConnectCollectionAlias[$collection],"&collections=",$collection)
+        $url = -join($solr, "admin/collections?action=CREATEALIAS&name=",$sitecorePrefix,"_",$xConnectCollectionAlias[$collection],"&collections=",$sitecorePrefix,"_",$collection)
         if ($solrUsername.length -gt 0){
             Invoke-WebRequest -Uri $url -Credential $credential
         }
@@ -58,12 +57,36 @@ function Create-XConnect-Alias($solr, $nodeCount) {
             Invoke-WebRequest -Uri $url
             # Write-Host $url
         }
-        
     }
 }
 
+function Update-XConnectSchema($solrm, $token, $solrVersion) {
+    try {
+        "Updating XDB Schemas ... "
+
+        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+        $headers.Add("Authorization", "Basic YXBwODIwLWFkbWluOktvbmFib3MhMjM=")
+
+        $body = Get-XConnectSchema $solrVersion
+
+        -join($sitecorePrefix, $collection) | Write-Host
+        $url = -join($solr, $sitecorePrefix,"_xdb_internal","/schema?wt=json")
+        $url | Write-Host
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Method Post -Uri $url -Headers $headers -Body $body -ContentType 'application/json' | Write-Host
+    } catch {
+        Write-Warning -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
+    }
+}
+
+function Get-XConnectSchema($solrVersion) {
+    $schemaFilePath = -join($xConnectConfigFolderPath, "xconnect-config-", $solrVersion, "-schema.json")
+    $schemaFilePath | Write-Host
+    Get-Content $schemaFilePath -Raw
+}
+
 function Update-XConnectConnectionStringsConfig ($solr, $path) {
-    "Updating XConnect ConnectionStrings in '$path' file"    
+    "Updating XConnect ConnectionStrings in '$path' file"
     $xpath = "//connectionStrings/add[@name='solrCore']"
     $solr = $solr.substring(0,$solr.length-1)
     if ($solrUsername.length -gt 0) {
@@ -103,6 +126,5 @@ function Update-XConnect-Schema ($solr) {
             # Write-Host $url
             # Write-Host $json
         }
-        
     }
 }

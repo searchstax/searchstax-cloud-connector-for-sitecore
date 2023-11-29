@@ -22,10 +22,6 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 10.2 Initial Update (10.2.0)
 - 10.3 Initial Update (10.3.0)
 
-Sitecore Commerce:
-- 9.2 Initial Update (9.2.0)
-- 9.3 Initial Update (9.3.0)
-
 ## Requirements
 - Powershell v6 or above
 - Powershell-yaml  module
@@ -59,11 +55,21 @@ It contains following fields:
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 10.1.1|
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
-|configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT", "COMMERCE" | XP\|XCONNECT|
-|isAzurePaaS| "True" will only configure Solr. "False" will configure both Solr and On-Premise Sitecore | true/false|
-|CommerceServicesPostfix| Suffix used for Sitecore Commerce installation. This is defined in Sitecore XC installation script.|"Sc9"|
-|isXCSwitchOnRebuild| Whether Sitecore commerce has been configured to use Switch On Rebuild feature. (v9.3.0 and above)| true/false|
+|configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT" | XP\|XCONNECT|
 |isSxa| "True" will add two additional collections to Solr for SXA support | true/false|
+|switchOnRebuild| Extended configuration for switch on rebuild. | |
+|switchOnRebuild.enableForPlatformIndexes|When "true", will add additional collections and aliases for Sitecore Platform Indexes (core, master, web, etc.).|true/flase|
+|switchOnRebuild.enableForMarketingIndexes|When "true", will add additional collections and aliases for Sitecore Platform Marketing Indexes (content testing, fxm, etc). Generally, this will always be false unless a specific use case calls for this configuration.|true/flase|
+|switchOnRebuild.enableForSXA|When "true", will add additional collections and aliases for Sitecore SXA Indexes.|true/flase|
+|switchOnRebuild.sufix|The suffix of the rebuild collection name. Default: "_rebuild" |string value|
+|switchOnRebuild.MainAlias|The suffix of the Main Alias name. Default: "_MainAlias" |string value|
+|switchOnRebuild.rebuildAlias|The suffix of the Rebuild Alias name. Default: "_RebuildAlias" |string value|
+|switchOnRebuild.sitecorePrefix|The prefix of the Rebuild collctions and Aliases. Default: "sitecore" |string value|
+|customIndexes| Allows of creation of custom indexes. Can be repeated for multiple custom indexes | |
+|customIndexes.core| Collection name of the custom index | string value |
+|customIndexes.isSwitchOnRebuild| When "true" will create additional rebuild collection and aliases | true/false |
+
+
 
 ### Instructions
 1. Configure the `config.yml` file.
@@ -100,13 +106,14 @@ You can use GitHub to submit [bug reports](https://github.com/searchstax/searchs
 ### Recommended Performance Optimization Settings by Sitecore
 Sitecore recommends updating some settings for performance optimization when working with Solr. You can find more details here: [Performance optimizations when using Solr](https://kb.sitecore.net/articles/671173)
 
-### Sitecore Commerce
-Currently Sitecore Commerce configuration is supported for only v9.2 - Initial Update and v9.3 - Initial Update.
 ### Sitecore SXA
 This plugin currently does not support Sitecore SXA configuration.
+
 ### IP Filtering
 If you have enabled IP filtering on your Solr instance, then make sure that you add the IP/CIDR block of your network or machine to the IP Filtering page. For more instructions on how to set up IP filtering, please follow our guide here - [How To Set-up IP Filtering](https://www.searchstax.com/docs/security/#IPfilter)
-### Sitecore v9.0 Update-2
+
+### Sitecore v9.0 Update-2+
 The plugin will automatically default to creating a separate config directory for every collection when being used to setup Sitecore v9.0.2.
+
 ### Have additional questions?
 Check [SearchStax Help Center](https://www.searchstax.com/docs/helpcenter/)
