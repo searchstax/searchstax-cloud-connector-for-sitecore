@@ -57,7 +57,19 @@ It contains following fields:
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
 |configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT" | XP\|XCONNECT|
 |isSxa| "True" will add two additional collections to Solr for SXA support | true/false|
-|isSwitchOnRebuild| "True" will add one additional collection for each created collection and its aliases to Solr for SwitchOnRebuild support | true/false|
+|switchOnRebuild| Extended configuration for switch on rebuild. | |
+|switchOnRebuild.enableForPlatformIndexes|When "true", will add additional collections and aliases for Sitecore Platform Indexes (core, master, web, etc.).|true/flase|
+|switchOnRebuild.enableForMarketingIndexes|When "true", will add additional collections and aliases for Sitecore Platform Marketing Indexes (content testing, fxm, etc). Generally, this will always be false unless a specific use case calls for this configuration.|true/flase|
+|switchOnRebuild.enableForSXA|When "true", will add additional collections and aliases for Sitecore SXA Indexes.|true/flase|
+|switchOnRebuild.sufix|The suffix of the rebuild collection name. Default: "_rebuild" |string value|
+|switchOnRebuild.MainAlias|The suffix of the Main Alias name. Default: "_MainAlias" |string value|
+|switchOnRebuild.rebuildAlias|The suffix of the Rebuild Alias name. Default: "_RebuildAlias" |string value|
+|switchOnRebuild.sitecorePrefix|The prefix of the Rebuild collctions and Aliases. Default: "sitecore" |string value|
+|customIndexes| Allows of creation of custom indexes. Can be repeated for multiple custom indexes | |
+|customIndexes.core| Collection name of the custom index | string value |
+|customIndexes.isSwitchOnRebuild| When "true" will create additional rebuild collection and aliases | true/false |
+
+
 
 ### Instructions
 1. Configure the `config.yml` file.
@@ -96,9 +108,12 @@ Sitecore recommends updating some settings for performance optimization when wor
 
 ### Sitecore SXA
 This plugin currently does not support Sitecore SXA configuration.
+
 ### IP Filtering
 If you have enabled IP filtering on your Solr instance, then make sure that you add the IP/CIDR block of your network or machine to the IP Filtering page. For more instructions on how to set up IP filtering, please follow our guide here - [How To Set-up IP Filtering](https://www.searchstax.com/docs/security/#IPfilter)
-### Sitecore v9.0 Update-2
+
+### Sitecore v9.0 Update-2+
 The plugin will automatically default to creating a separate config directory for every collection when being used to setup Sitecore v9.0.2.
+
 ### Have additional questions?
 Check [SearchStax Help Center](https://www.searchstax.com/docs/helpcenter/)
