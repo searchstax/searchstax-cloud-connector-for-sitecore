@@ -19,7 +19,7 @@ function Upload-CustomConfigs($solrVersion, $token) {
     "Uploading Custom Configs:"
 
     foreach($customIndex in $global:customIndexes){
-        $configName = $collection.core
+        $configName = -join('',$sitecorePrefix,$customIndex.core)
         Write-Host "Uploading $configName config..."
         Upload-Config $configName $solrVersion $token
     }
@@ -75,12 +75,13 @@ function Create-CustomCollections($solr, $nodeCount) {
     foreach($customIndex in $global:customIndexes){
         Write-Host "Creating Custom $customIndex collection..."
         $customIndexName = $customIndex.core
-        Create-Collection $customIndexName $customIndexName $solr $nodeCount
+        $configName = -join('',$sitecorePrefix,$customIndex.core)
+        Create-Collection $customIndexName $configName $solr $nodeCount
 
-        if($customIndex.isSwitchOnRebuild) {
+        if($customIndex.isSwitchOnRebuild -eq "true") {
             $customIndexRebuildCollection = -join($customIndexName,$switchOnRebuildSufix)
             Write-Host "Creating SwitchOnRebuild $customIndexRebuildCollection collection..."
-            Create-Collection $customIndexRebuildCollection $customIndexName $solr $nodeCount
+            Create-Collection $customIndexRebuildCollection $configName $solr $nodeCount
 
             $rebuildCollectionAlias = -join($customIndexName,$switchOnRebuildAlias)
             Write-Host "Creating $rebuildCollectionAlias alias for $customIndexRebuildCollection collection"
