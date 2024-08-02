@@ -207,44 +207,35 @@ Init
 
 # Initializing Script Ends
 
+#Separate Out Solr Determination from Collection Determination
+if ($sitecoreVersion -eq "9.0.2") {
+    $solrVersion = "6"
+    $global:isUniqueConfigs= $true
+} elseif ($sitecoreVersion -eq "9.1.1") {
+    $solrVersion = "7.2.1"
+} elseif ($sitecoreVersion -eq "9.2.0") {
+    $solrVersion = "7.5.0"
+} elseif ($sitecoreVersion -eq "9.3.0") {
+    $solrVersion = "8.1.1"
+} elseif ($sitecoreVersion -like "10.0.*") {
+    $solrVersion = "8.4.0"
+} elseif ($sitecoreVersion -like "10.1.*") {
+    $solrVersion = "8.4.0"
+} elseif ($sitecoreVersion -like "10.2.*") {
+    $solrVersion = "8.8.2"
+} elseif ($sitecoreVersion -like "10.3.*") {
+    $solrVersion = "8.11.2"
+} elseif ($sitecoreVersion -like "10.4.*") {
+    $solrVersion = "8.11.2"
+} else {
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*, 10.4.*" -ErrorAction Stop
+}
 
+#Determine Configuration Mode
 if ($global:isConfigureXM -eq "true") {
 	$global:coll += $collectionsXM
-}
-elseif($global:isConfigureXP -eq "true") {
-    if ($sitecoreVersion -eq "9.0.2") {
-        $solrVersion = "6"
-        $global:isUniqueConfigs= $true
-        $global:collectionsMarketing = $collectionsMarketing
-    } elseif ($sitecoreVersion -eq "9.1.1") {
-        $solrVersion = "7.2.1"
-        $global:collectionsMarketing = $collectionsMarketing
-    } elseif ($sitecoreVersion -eq "9.2.0") {
-        $solrVersion = "7.5.0"
-        $global:collectionsMarketing = $collectionsMarketing
-    } elseif ($sitecoreVersion -eq "9.3.0") {
-        $solrVersion = "8.1.1"
-        $global:collectionsMarketing = $collections93Marketing
-    } elseif ($sitecoreVersion -like "10.0.*") {
-        $solrVersion = "8.4.0"
-        $global:collectionsMarketing = $collections93Marketing
-    } elseif ($sitecoreVersion -like "10.1.*") {
-        $solrVersion = "8.4.0"
-        $global:collectionsMarketing = $collections93Marketing
-    } elseif ($sitecoreVersion -like "10.2.*") {
-        $solrVersion = "8.8.2"
-        $global:collectionsMarketing = $collections93Marketing
-    } elseif ($sitecoreVersion -like "10.3.*") {
-        $solrVersion = "8.11.2"
-        $global:collectionsMarketing = $collections93Marketing
-    } elseif ($sitecoreVersion -like "10.4.*") {
-        $solrVersion = "8.11.2"
-        $global:collectionsMarketing = $collections93Marketing
-    }
-     else {
-        Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*, 10.4.*" -ErrorAction Stop
-    }
-
+} elseif($global:isConfigureXP -eq "true") {
+    $global:collectionsMarketing = $collections93Marketing
     $global:coll = $collectionsXM + $global:collectionsMarketing
 }
 
@@ -259,7 +250,6 @@ if($global:switchOnRebuildEnableForPlatformIndexes) {
 if($global:switchOnRebuildEnableForMarketingIndexes) {
     $global:switchOnRebuildCollections += $global:collectionsMarketing
 }
-
 
 Write-Host "Sitecore Version    - $sitecoreVersion"
 Write-Host "Solr Version        - $solrVersion"
