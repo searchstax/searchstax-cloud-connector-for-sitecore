@@ -207,11 +207,8 @@ Init
 
 # Initializing Script Ends
 
-
-if ($global:isConfigureXM -eq "true") {
-	$global:coll += $collectionsXM
-}
-elseif($global:isConfigureXP -eq "true") {
+if ($global:isConfigureXM -Or $global:isConfigureXP){
+    
     if ($sitecoreVersion -eq "9.0.2") {
         $solrVersion = "6"
         $global:isUniqueConfigs= $true
@@ -243,14 +240,16 @@ elseif($global:isConfigureXP -eq "true") {
     } elseif ($sitecoreVersion -like "10.4.*") {
         $solrVersion = "9.8.1"
         $global:collectionsMarketing = $collections93Marketing
-    }
-
-     else {
+    } else {
         Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*, 10.4.0, 10.4.*" -ErrorAction Stop
     }
 
-    $global:coll = $collectionsXM + $global:collectionsMarketing
+    $global:coll += $collectionsXM
+    if ($global:isConfigureXP){
+        $global:coll += $global:collectionsMarketing    
+    }
 }
+
 
 if ($global:isSxa -eq "true") {
     $global:sxaColl = $collectionsSXA
