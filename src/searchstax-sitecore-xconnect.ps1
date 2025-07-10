@@ -65,7 +65,7 @@ function Update-XConnectSchema($solrm, $token, $solrVersion) {
         "Updating XDB Schemas ... "
 
         $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Authorization", "Basic YXBwODIwLWFkbWluOktvbmFib3MhMjM=")
+        $headers.Add("Authorization", "Basic $token")
 
         $body = Get-XConnectSchema $solrVersion
 
