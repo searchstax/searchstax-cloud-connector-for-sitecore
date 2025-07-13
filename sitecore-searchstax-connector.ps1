@@ -23,6 +23,7 @@ $batchSize="500"
 
 function Init {
     [string[]]$fileContent = Get-Content $configPath
+    $global:coll = @()
     $content = ''
     foreach ($line in $fileContent) { 
         $content = $content + "`n" + $line 

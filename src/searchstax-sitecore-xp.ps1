@@ -123,7 +123,7 @@ function Create-Collection($collectionName, $configName, $solr, $nodeCount) {
             Invoke-WebRequest -Uri $url
         }
     } catch {
-        Write-Warning -Message "Unable to create switchOnRebuild collection $collectionName. Error was: $_" -ErrorAction Stop
+        Write-Warning -Message "Unable to create collection $collectionName. Error was: $_" -ErrorAction Stop
     }
 }
 
