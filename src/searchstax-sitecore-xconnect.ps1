@@ -64,16 +64,17 @@ function Update-XConnectSchema($solrm, $token, $solrVersion) {
     try {
         "Updating XDB Schemas ... "
 
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Authorization", "Basic YXBwODIwLWFkbWluOktvbmFib3MhMjM=")
+        if ($solrUsername.length -gt 0){
+            $secpasswd = ConvertTo-SecureString $solrPassword -AsPlainText -Force
+            $credential = New-Object System.Management.Automation.PSCredential($solrUsername, $secpasswd)
+        }
 
         $body = Get-XConnectSchema $solrVersion
 
         -join($sitecorePrefix, $collection) | Write-Host
         $url = -join($solr, $sitecorePrefix,"_xdb_internal","/schema?wt=json")
         $url | Write-Host
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Method Post -Uri $url -Headers $headers -Body $body -ContentType 'application/json' | Write-Host
+        Invoke-WebRequest -Method Post -Uri $url -Credential $credential -Body $body -ContentType 'application/json' | Write-Host
     } catch {
         Write-Warning -Message "Unable to upload XDB config file. Error was: $_" -ErrorAction Stop
     }

@@ -22,6 +22,7 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 10.2 Initial Update (10.2.0)
 - 10.3 Initial Update (10.3.0)
 - 10.4 Initial Update (10.4.0)
+- 10.4 Update-1 (10.4.1)
 
 ## Requirements
 - Powershell v6 or above
@@ -56,7 +57,7 @@ It contains following fields:
 |solrPassword| Solr password (Optional)||
 |sitecoreVersion| Version of sitecore from the above list| 10.1.1|
 |isUniqueConfigs| "true" will create a separate config file for each collection, "false" will create only 1 config which will be used by all the collections. (Note: This defaults to true for Sitecore v9.0.2) | true/false|
-|configurationMode| Select the part of Sitecore being configured - "XP", "XCONNECT" | XP\|XCONNECT|
+|configurationMode| Select the part of Sitecore being configured - "XM", "XP", "XCONNECT" | XP\|XCONNECT|
 |isSxa| "True" will add two additional collections to Solr for SXA support | true/false|
 |switchOnRebuild| Extended configuration for switch on rebuild. | |
 |switchOnRebuild.enableForPlatformIndexes|When "true", will add additional collections and aliases for Sitecore Platform Indexes (core, master, web, etc.).|true/flase|
