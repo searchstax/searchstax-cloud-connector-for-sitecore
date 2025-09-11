@@ -230,6 +230,9 @@ if ($sitecoreVersion -eq "9.0.2") {
 } elseif ($sitecoreVersion -like "10.2.*") {
     $solrVersion = "8.8.2"
     $global:collectionsMarketing = $collections93Marketing
+} elseif ($sitecoreVersion -like "10.3.3") {
+    $solrVersion = "9.8.1"
+    $global:collectionsMarketing = $collections93Marketing
 } elseif ($sitecoreVersion -like "10.3.*") {
     $solrVersion = "8.11.2"
     $global:collectionsMarketing = $collections93Marketing
@@ -240,7 +243,7 @@ if ($sitecoreVersion -eq "9.0.2") {
     $solrVersion = "9.8.1"
     $global:collectionsMarketing = $collections93Marketing
 } else {
-    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*, 10.4.0, 10.4.*" -ErrorAction Stop
+    Write-Error -Message "Unsupported sitecore version specified. Supported versions are 9.0.2, 9.1.1, 9.2.0, 9.3.0, 10.0.*, 10.1.*, 10.2.*, 10.3.*, 10.4.*" -ErrorAction Stop
 }
 
 
