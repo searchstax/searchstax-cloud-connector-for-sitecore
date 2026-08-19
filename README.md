@@ -23,6 +23,7 @@ Currently the script only supports following sitecore XP versions and their XCon
 - 10.3 Initial Update (10.3.0)
 - 10.4 Initial Update (10.4.0)
 - 10.4 Update-1 (10.4.1)
+- 10.5 Initial Update (10.5.0)
 
 ## Requirements
 - Powershell v6 or above
