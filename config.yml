@@ -4,7 +4,7 @@ settings:
   sitecorePrefix: "sitecore"
   solrUsername: ""
   solrPassword: ""
-  sitecoreVersion : "10.4.1"              # Supported versions - 9.0.2, 9.1.1, 9.2.0, 9.3.x, 10.0.x, 10.1.x, 10.1.1, 10.2.x, 10.3.x, 10.3.3, 10.4.0, 10.4.1
+  sitecoreVersion : "10.4.1"              # Supported versions - 9.0.2, 9.1.1, 9.2.0, 9.3.x, 10.0.x, 10.1.x, 10.1.1, 10.2.x, 10.3.x, 10.3.3, 10.4.0, 10.4.1, 10.5.0
   isUniqueConfigs: "true"                 # [true/false] 
   configurationMode: "XP|XCONNECT"        # ["XP" "XM" "XCONNECT" "XP|XCONNECT"]
   isSxa: "false"                          # Generates two additional search indexes for SXA
